@@ -1,41 +1,75 @@
 import json
 
+from colorama import Fore, Style
+
 from display.display_interface import IDisplay
+
+USER_INPUT_STYLE = {
+    "color": Fore.GREEN,
+    "style": Style.BRIGHT
+}
 
 
 class CmdLineDisplay(IDisplay):
     def prompt_user_input(self, message="User Input: "):
-        return input(message)
+        return input(Fore.WHITE + message + Style.RESET_ALL)
 
     def print_agent_message(self, agent_name, message):
-        print(f"Agent {agent_name} says: {message}")
-
-    def print_user_message(self):
-        pass
+        print(Fore.GREEN + f"{agent_name}" + Fore.WHITE + f": {message}" + Style.RESET_ALL, flush=True)
 
     def ask_permission(self, agent_name, command):
         command_name = command['name']
         command_args = command.get('args', {})
-        print(f"COMMAND = {command_name} ARGUMENTS = {command_args}")
-        print(
-            f"Enter 'y' to authorise command or 'n' to exit program, or enter feedback for {agent_name}...",
-            flush=True)
-        while True:
-            console_input = input("Input:")
-            if console_input.lower() == "y":
-                user_input = "y"
-                break
-            elif console_input.lower() == "n":
-                user_input = "n"
-                break
-            else:
-                user_input = console_input
-                command_name = "human_feedback"
-                break
+        command_type = command.get('type', None)
+        print(Fore.WHITE + f"Requesting permission to execute command: " + Fore.GREEN + f"{command_name}" + Style.RESET_ALL, flush=True)
 
-        if user_input == "y NEXT COMMAND JSON":
-            print("-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=")
+        if command_args:
+            print(Fore.WHITE + f"Command arguments: " + Fore.GREEN + f"{json.dumps(command_args)}" + Style.RESET_ALL, flush=True)
+
+        if command_type:
+            print(Fore.WHITE + f"Command type: " + Fore.GREEN + f"{command_type}" + Style.RESET_ALL, flush=True)
+
+        print(
+            Fore.WHITE + f"Enter " + Fore.GREEN + 'y' + Fore.WHITE + f" to authorise command or " +
+            Fore.RED + 'n' + Fore.WHITE + f" to exit program, or enter feedback for " + Fore.GREEN + f"{agent_name}"
+            + Fore.WHITE + "...",
+            flush=True)
+        console_input = input("")
+        if console_input.lower() == "y":
+            user_input = "y"
+        elif console_input.lower() == "n":
+            user_input = "n"
+        else:
+            user_input = console_input
+            command_name = "human_feedback"
+
+        if user_input == "y":
+            print(Fore.LIGHTWHITE_EX + "-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=" + Style.RESET_ALL)
         elif user_input == "n":
-            print("Exiting...", flush=True)
-        pass
+            print(Fore.RED + "Exiting..." + Style.RESET_ALL)
         return command_name, user_input
+
+    def print_agent_goals(self, goals, personal_goals):
+        print(Fore.YELLOW + f"Goals:" + Style.RESET_ALL, flush=True)
+        for goal in goals:
+            print(Fore.WHITE + f"{goal}" + Style.RESET_ALL, flush=True)
+
+        print(Fore.YELLOW + f"Personal Goals:" + Style.RESET_ALL, flush=True)
+
+        for goal in personal_goals:
+            print(Fore.WHITE + f"{goal}" + Style.RESET_ALL, flush=True)
+
+    def print_executing_command(self, command_name, command_args, command_type):
+        print(Fore.WHITE + f"Executing command: " + Fore.GREEN + f"{command_name}" + Style.RESET_ALL, flush=True)
+
+        if command_args:
+            print(Fore.WHITE + f"Command arguments: " + Fore.GREEN + f"{json.dumps(command_args)}" + Style.RESET_ALL, flush=True)
+
+        if command_type:
+            print(Fore.WHITE + f"Command type: " + Fore.GREEN + f"{command_type}" + Style.RESET_ALL, flush=True)
+
+    def print_hello_world(self, agent_name):
+        print(Fore.WHITE + f"Hello World! {agent_name} here!" + Style.RESET_ALL, flush=True)
+
+    def print_agent_criticism(self, criticism):
+        print(Fore.RED + f"Criticism: {criticism}" + Style.RESET_ALL, flush=True)

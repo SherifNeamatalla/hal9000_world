@@ -7,13 +7,17 @@ class IDisplay(ABC):
         pass
 
     @abstractmethod
-    def print_user_message(self):
-        pass
-
-    @abstractmethod
     def ask_permission(self, agent_name, command):
         pass
 
     @abstractmethod
     def prompt_user_input(self, message=None):
+        pass
+
+    @abstractmethod
+    def print_agent_goals(self, goals, personal_goals):
+        pass
+
+    @abstractmethod
+    def print_executing_command(self, command_name, command_args=None, command_type=None):
         pass

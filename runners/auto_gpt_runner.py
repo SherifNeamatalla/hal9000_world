@@ -1,6 +1,7 @@
 from agents.base_agent import BASE_COMMANDS_SET_NAME, BaseAgent
 from agents.config import AgentConfig
 from display.cmd_line_display import CmdLineDisplay
+from display.spinner import Spinner
 from runners.runner_interface import IRunner
 from util.storage_loader import load_agent
 
@@ -11,11 +12,14 @@ class AutoGptRunner(IRunner):
 
         agent = self.load_agent(display)
 
-        agent.wake()
+        with Spinner("Waking up... "):
+            agent.wake()
 
+        display.print_hello_world(agent.name)
         agent.act()
         while True:
-            agent.chat()
+            with Spinner("Thinking... "):
+                agent.chat()
 
             agent.act()
 

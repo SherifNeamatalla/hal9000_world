@@ -20,6 +20,8 @@ def load_agent(agent_name):
         config = AgentConfig.from_dict(yaml_content['config'])
         name = yaml_content['name']
         role = yaml_content['role']
+        goals = yaml_content['goals'] if 'goals' in yaml_content else []
+        personal_goals = yaml_content['personal_goals'] if 'personal_goals' in yaml_content else []
 
         if config.get('type') == BROWSER_AGENT_TYPE:
             return BrowserAgent()
@@ -28,7 +30,7 @@ def load_agent(agent_name):
             return SingleUserAgent(name, role, config.get('save_model'))
 
         if config.get('type') == BASE_AGENT_TYPE:
-            return BaseAgent(name, role, config)
+            return BaseAgent(name, role, config, goals, personal_goals)
 
         return BaseAgent(name, role, config)
 

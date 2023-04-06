@@ -64,3 +64,8 @@ class FileLongTermMemory(ILongTermMemory):
 
                 if self.memory is None:
                     self.memory = {}
+
+                self.cached_memory = []
+                if self.memory and len(self.memory.keys()) > 0:
+                    key = list(self.memory.keys())[-1]
+                    self.cache(key, self.memory[key])

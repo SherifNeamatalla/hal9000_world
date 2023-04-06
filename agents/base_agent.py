@@ -1,4 +1,4 @@
-import json
+import json5 as json
 import os.path
 from pathlib import Path
 
@@ -9,7 +9,7 @@ from agents.memory.file_long_term_memory import FileLongTermMemory
 from agents.memory.short_term_memory import BaseMemory
 from commands.commands_executor import execute_cmd
 from display.cmd_line_display import CmdLineDisplay
-from logger.logger import log
+from logger.logger import log, debug
 from prompts.prompt_loader import load_commands_set, load_prompt
 from util import token_counter
 
@@ -33,12 +33,13 @@ USER_COMMAND = "user"
 
 
 class BaseAgent:
-    def __init__(self, name, role, config, goals=[], display_manager=CmdLineDisplay(), voice_manager=None):
+    def __init__(self, name, role, config, goals=[], personal_goals=[], display_manager=CmdLineDisplay(),
+                 voice_manager=None):
         # This holds the long term memory, agent decides what to store here
         self.name = name
         self.role = role
         self.goals = goals
-        self.personal_goals = []
+        self.personal_goals = personal_goals
         # TODO: Should be able to load this from a config and a factory
         self.long_term_memory = FileLongTermMemory(self.name)
         # This holds the current conversation
@@ -52,7 +53,7 @@ class BaseAgent:
         self.save()
 
     def wake(self):
-        log(f"Agent {self.name} is waking up")
+        log(f"Agent {self.name} is waking up...")
         # Adds a pseudo user prompt to make the agent start the conversation
         return self.chat(self.config.get('default_user_input'))
 
@@ -63,14 +64,16 @@ class BaseAgent:
             # If last message was a user don't add another one
             last_message = self.short_term_memory.get_last_message()
             if last_message and last_message['role'] == USER_ROLE:
-                user_input = last_message['content'] + " and " + self.config.get('default_user_input')
+                self.short_term_memory.delete_last_message()
+                user_input = last_message['content'] + ", " + self.config.get('default_user_input')
+
             else:
                 user_input = user_input + self.config.get('default_user_input') if user_input else self.config.get(
                     'default_user_input')
 
         context, remaining_tokens = self.create_context(user_input)
 
-        log(f"Agent {self.name} is chatting with user input: {user_input}")
+        debug(f"Agent {self.name} is chatting with user input: {user_input}")
 
         response = openai.ChatCompletion.create(
             model=self.config.get('model'),
@@ -81,7 +84,8 @@ class BaseAgent:
 
         new_response_json = response.choices[0].message["content"]
 
-        log(f"Agent {self.name} got response: {new_response_json}")
+        debug(f"Agent {self.name} got response: {new_response_json}")
+
         # Update short term memory
         self.short_term_memory.add(self.create_message(USER_ROLE, user_input))
         self.short_term_memory.add(self.create_message(ASSISTANT_ROLE, new_response_json))
@@ -94,7 +98,7 @@ class BaseAgent:
 
         try:
             response = json.loads(response_json)
-        except json.JSONDecodeError as e:
+        except Exception as e:
             self.add_error_command(JSON_LOADING_ERROR, e)
             return
 
@@ -103,7 +107,7 @@ class BaseAgent:
 
         thoughts = response['thoughts']
 
-        log(f"Agent {self.name} is acting on command: {command} and thoughts: {thoughts}")
+        debug(f"Agent {self.name} is acting on command: {command} and thoughts: {thoughts}")
 
         self.write(thoughts)
 
@@ -118,11 +122,15 @@ class BaseAgent:
 
         # TODO use reasoning, plan, criticism
 
+        self.save()
+
     def plan(self, thoughts):
         self.personal_goals = thoughts['plan'].split('\n')
 
         if len(self.personal_goals) > self.config.get('max_personal_goals'):
             self.personal_goals = self.personal_goals[:self.config.get('max_personal_goals')]
+
+        self.display_manager.print_agent_goals(self.goals, self.personal_goals)
 
     def execute_command(self, command):
         if not command or not command['name']:
@@ -153,6 +161,8 @@ class BaseAgent:
 
         command_name = command['name']
 
+        self.display_manager.print_executing_command(command_name, command.get('args', {}), command.get('type', None))
+
         command_result = execute_cmd(command)
 
         log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
@@ -162,7 +172,7 @@ class BaseAgent:
     def execute_user_prompt_command(self, command_args, command_type):
         if command_type == 'prompt':
             user_input = self.display_manager.prompt_user_input(command_args['prompt'])
-            self.add_command_result(USER_COMMAND, user_input)
+            self.short_term_memory.add(self.create_message(USER_ROLE, user_input))
 
     def ask_for_permission(self, command):
         if not self.config.get('autonomous'):
@@ -179,6 +189,7 @@ class BaseAgent:
         return True
 
     def execute_memory_command(self, command_args, command_type):
+        self.display_manager.print_executing_command(MEMORY_COMMAND, command_args, command_type)
         if command_type == 'set':
             self.long_term_memory.set(command_args['key'], command_args['value'])
         elif command_type == 'delete':
@@ -192,6 +203,8 @@ class BaseAgent:
             return
 
         self.display_manager.print_agent_message(self.name, thoughts['text'])
+
+        self.display_manager.print_agent_criticism(thoughts['criticism'])
 
     def speak(self, thoughts):
         if not self.voice_manager:
@@ -232,7 +245,8 @@ class BaseAgent:
         return [self.create_message(SYSTEM_ROLE, self.hello_world),
                 self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string()),
                 self.create_message(SYSTEM_ROLE, 'User Goals: ' + '\n'.join(self.goals)),
-                self.create_message(SYSTEM_ROLE, 'Personal Goals: ' + '\n'.join(self.personal_goals))]
+                self.create_message(SYSTEM_ROLE, 'Personal Goals: ' + '\n'.join(self.personal_goals)),
+                self.create_message(SYSTEM_ROLE, load_prompt(RESPONSE_FORMAT_PROMPT_NAME))]
 
     def create_short_term_memory_context(self, context, user_input):
         # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the
@@ -278,14 +292,16 @@ class BaseAgent:
 
     def init_wakeup_prompt(self, commands_set_path):
         new_prompt = f"You are {self.name}, {self.role}"
+        if self.config.get('include_commands_set') and self.config.get('commands_set_path'):
+            new_prompt += '\n' + load_commands_set(commands_set_path)
+
         if self.config.get('include_constraints_resources_prompt'):
             new_prompt += '\n' + load_prompt(CONSTRAINTS_RESOURCES_PROMPT_NAME)
 
-        if self.config.get('include_response_format_prompt'):
-            new_prompt += '\n' + load_prompt(RESPONSE_FORMAT_PROMPT_NAME)
+        # Trying to remove this as last prompt, so agent pays more attention to it
+        # if self.config.get('include_response_format_prompt'):
+        #     new_prompt += '\n' + load_prompt(RESPONSE_FORMAT_PROMPT_NAME)
 
-        if self.config.get('include_commands_set') and self.config.get('commands_set_path'):
-            new_prompt += '\n' + load_commands_set(commands_set_path)
         self.hello_world = new_prompt
 
     def save(self):
@@ -308,6 +324,8 @@ class BaseAgent:
                 "model": self.config.get('model'),
                 "config": self.config.to_dict(),
                 "hello_world": self.hello_world,
+                "goals": self.goals,
+                "personal_goals": self.personal_goals
             }
             yaml.dump(yaml_content, outfile, default_flow_style=False)
 

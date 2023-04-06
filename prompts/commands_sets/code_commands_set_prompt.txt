@@ -1,0 +1,6 @@
+COMMANDS:
+14. Evaluate Code: "code", args: "code": "<full _code_string>" type: "evaluate"
+15. Get Improved Code: "code", args: "suggestions": "<list_of_suggestions>", "code": "<full_code_string>" type: "improve"
+16. Write Tests: "code", args: "code": "<full_code_string>", "focus": "<list_of_focus_areas>" type: "test"
+17. Execute Python File: "code", args: "file": "<file>" "type": "py" type: "execute"
+18. Task Complete (Shutdown): "task_complete", args: "reason": "<reason>"

@@ -29,3 +29,6 @@ class BaseMemory():
 
     def clear(self):
         self.memory = []
+
+    def delete_last_message(self):
+        self.memory.pop()

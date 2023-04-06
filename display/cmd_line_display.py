@@ -93,3 +93,6 @@ class CmdLineDisplay(IDisplay):
 
     def print_error(self, command_memory_entry):
         print(Fore.RED + f"{command_memory_entry}" + Style.RESET_ALL, flush=True)
+
+    def print_agent_thoughts(self, thoughts):
+        print(Fore.LIGHTGREEN_EX + f"Thoughts: " + Fore.GREEN + f"{thoughts}" + Style.RESET_ALL, flush=True)

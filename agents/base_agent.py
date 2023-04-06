@@ -204,7 +204,7 @@ class BaseAgent:
         if not self.display_manager:
             return
 
-        self.display_manager.print_agent_message(self.name, thoughts['text'])
+        self.display_manager.print_agent_thoughts(thoughts['text'])
 
         self.display_manager.print_agent_criticism(thoughts['criticism'])
 

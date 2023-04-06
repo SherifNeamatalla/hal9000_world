@@ -1,0 +1,1 @@
+15.Prompt User: name: "user", args: "prompt": "<prompt>" type: "prompt" - Prompt the user with the given prompt and receive a response.

@@ -249,14 +249,14 @@ class BaseAgent:
         # Add the Who you are, your goals, constraints, resources and response format
         # Add the permanent memory of the agent
         user_goals = 'User Goals: ' + '\n' + '\n'.join(self.goals)
-        personal_goals = 'Personal Goals: ' + '\n' + '\n'.join(self.personal_goals)
+        personal_goals = 'Personal Goals: ' + '\n' + '\n'.join(self.personal_goals) if self.personal_goals and len(
+            self.personal_goals) > 0 else ''
 
         message = self.hello_world(self.config.get('commands_set_path'), user_goals_str=user_goals,
                                    personal_goals_str=personal_goals)
 
         return [self.create_message(SYSTEM_ROLE, message),
-                self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string()),
-                self.create_message(SYSTEM_ROLE, load_prompt(RESPONSE_FORMAT_PROMPT_NAME))]
+                self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string())]
 
     def create_short_term_memory_context(self, context, user_input):
         # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the
@@ -301,24 +301,24 @@ class BaseAgent:
         return context, tokens_remaining
 
     def hello_world(self, commands_set_path, user_goals_str, personal_goals_str):
-        prompt_start = "Your decisions must always be made independently without seeking user assistance. Play to " \
-                       "your strengths as an LLM and pursue simple strategies with no legal complications.";
+        prompt_start = "Your decisions must always be made independently without seeking user assistance."
+        prompt_start += '\n\n' + "Play to your strengths as an LLM and pursue simple strategies with no legal complications."
         new_prompt = f"You are {self.name}, {self.role}\n{prompt_start}\n\n"
 
         if user_goals_str:
-            new_prompt += "\n" + user_goals_str
+            new_prompt += "\n" + user_goals_str + "\n"
 
         if personal_goals_str:
-            new_prompt += "\n" + personal_goals_str
+            new_prompt += "\n" + personal_goals_str + "\n"
 
         if self.config.get('include_commands_set') and self.config.get('commands_set_path'):
-            new_prompt += '\n' + load_commands_set(commands_set_path)
+            new_prompt += '\n' + load_commands_set(commands_set_path) + '\n'
 
         if self.config.get('include_constraints_resources_prompt'):
-            new_prompt += '\n' + load_prompt(CONSTRAINTS_RESOURCES_PROMPT_NAME)
+            new_prompt += '\n' + load_prompt(CONSTRAINTS_RESOURCES_PROMPT_NAME) + '\n'
 
-        # if self.config.get('include_response_format_prompt'):
-        #     new_prompt += '\n' + load_prompt(RESPONSE_FORMAT_PROMPT_NAME)
+        if self.config.get('include_response_format_prompt'):
+            new_prompt += '\n' + load_prompt(RESPONSE_FORMAT_PROMPT_NAME)
 
         return new_prompt
 

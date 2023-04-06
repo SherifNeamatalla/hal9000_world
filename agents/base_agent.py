@@ -26,6 +26,9 @@ MODELS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "agents")
 ACTION_DENIED = "Action denied"
 
 BASE_AGENT_TYPE = "BaseAgent"
+JSON_LOADING_ERROR = "Loading response JSON"
+
+MEMORY_COMMAND = "memory"
 
 
 class BaseAgent:
@@ -77,7 +80,11 @@ class BaseAgent:
         # Find the last message from the assistant to act upon it
         response_json = self.short_term_memory.get_last_message(ASSISTANT_ROLE)
 
-        response = json.loads(response_json)
+        try:
+            response = json.loads(response_json)
+        except json.JSONDecodeError as e:
+            self.add_error_command(JSON_LOADING_ERROR, e)
+            return
 
         # Has name and args
         command = response['command']
@@ -90,7 +97,10 @@ class BaseAgent:
 
         self.speak(thoughts)
 
-        self.execute_command(command)
+        try:
+            self.execute_command(command)
+        except Exception as e:
+            self.add_error_command(command['name'], e)
 
         # TODO use reasoning, plan, criticism
 
@@ -122,8 +132,6 @@ class BaseAgent:
 
         self.add_command_result(command_name, command_result)
 
-
-
     def ask_for_permission(self, command):
         if not self.config.get('autonomous'):
             command_name, user_input = self.display_manager.ask_permission(self.name, command)
@@ -139,10 +147,13 @@ class BaseAgent:
         return True
 
     def execute_memory_command(self, command_args, command_type):
-        if command_type == 'add':
+        if command_type == 'set':
             self.long_term_memory.set(command_args['key'], command_args['value'])
         elif command_type == 'delete':
             self.long_term_memory.delete(command_args['key'])
+        elif command_type == 'get':
+            result = self.long_term_memory.get(command_args['key'])
+            self.add_command_result(MEMORY_COMMAND, result)
 
     def write(self, thoughts):
         if not self.display_manager:
@@ -155,6 +166,11 @@ class BaseAgent:
             return
 
         self.voice_manager.speak(thoughts['speak'])
+
+    def add_error_command(self, command_name, error):
+        command_memory_entry = f"Command {command_name} failed, error:{str(error)}"
+
+        self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry))
 
     def add_command_result(self, command_name, command_result):
         if not command_result:
@@ -182,7 +198,7 @@ class BaseAgent:
         # Add the Who you are, your goals, constraints, resources and response format
         # Add the permanent memory of the agent
         return [self.create_message(SYSTEM_ROLE, self.hello_world),
-                self.create_message(SYSTEM_ROLE, "Permanent memory: " + self.long_term_memory.get_as_string())]
+                self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string())]
 
     def create_short_term_memory_context(self, context, user_input):
         # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the

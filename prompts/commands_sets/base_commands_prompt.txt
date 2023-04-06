@@ -1,8 +1,9 @@
 COMMANDS:
 
-1. Google Search: "google", args: "input": "<search>", type: "search"
-2. Memory Add: "memory", args: "key": "<key>", "value": "<string>" type: "add"
+1. Google Search: "google", args: "input": "<search>" type: "search"
+2. Memory Field Set: "memory", args: "key": "<key>", "value": "<string>" type: "set"
 3. Memory Delete: "memory", args: "key": "<key>" type: "delete"
+4. Memory Get: "memory", args: "key": "<key>" type: "get"
 5. Browse Website: "browser", args: "url": "<url>", "question": "<what_you_want_to_find_on_website>" type: "search"
 6. Start GPT Agent: "agents",  args: "name": <name>, "task": "<short_task_desc>", "prompt": "<prompt>", "save_for_later_use": "<save_for_later_use>" type: "start"
 7. Message GPT Agent: "agents", args: "key": "<key>", "message": "<message>" type: "message"

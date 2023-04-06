@@ -29,7 +29,7 @@ class CmdGoogle(ICmd):
         return json.dumps(search_results, ensure_ascii=False, indent=4)
 
     @staticmethod
-    def google_official_search(query, num_results=8):
+    def google_official_search(query, num_results=5):
 
         try:
             # Get the Google API key and Custom Search Engine ID from the config file

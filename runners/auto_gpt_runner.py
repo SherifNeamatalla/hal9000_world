@@ -2,7 +2,7 @@ from agents.base_agent import BASE_COMMANDS_SET_NAME, BaseAgent
 from agents.config import AgentConfig
 from display.cmd_line_display import CmdLineDisplay
 from runners.runner_interface import IRunner
-from storage.storage_loader import load_agent
+from util.storage_loader import load_agent
 
 
 class AutoGptRunner(IRunner):

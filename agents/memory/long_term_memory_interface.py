@@ -3,19 +3,15 @@ from abc import ABC, abstractmethod
 
 class ILongTermMemory(ABC):
     @abstractmethod
-    def add(self, value):
-        pass
-
-    @abstractmethod
-    def get(self, index):
+    def get(self, key):
         pass
 
     @staticmethod
-    def set(self, index, value):
+    def set(self, key, value):
         pass
 
     @abstractmethod
-    def delete(self, index):
+    def delete(self, key):
         pass
 
     @abstractmethod

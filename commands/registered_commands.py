@@ -1,3 +1,4 @@
+from commands.cmd_agents import CmdAgents
 from commands.cmd_browser import CmdBrowser
 from commands.cmd_google import CmdGoogle
 
@@ -5,4 +6,5 @@ from commands.cmd_google import CmdGoogle
 REGISTERED_COMMANDS_MAP = {
     'google': CmdGoogle(),
     "browser": CmdBrowser(),
+    "agents": CmdAgents(),
 }

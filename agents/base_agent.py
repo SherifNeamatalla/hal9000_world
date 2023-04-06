@@ -5,11 +5,11 @@ from pathlib import Path
 import openai
 import yaml
 
-from agents.config import AgentConfig
 from agents.memory.file_long_term_memory import FileLongTermMemory
 from agents.memory.short_term_memory import BaseMemory
 from commands.commands_executor import execute_cmd
 from display.cmd_line_display import CmdLineDisplay
+from logger.logger import log
 from prompts.prompt_loader import load_commands_set, load_prompt
 from util import token_counter
 
@@ -20,8 +20,6 @@ BASE_COMMANDS_SET_NAME = "base_commands_prompt.txt"
 USER_ROLE = "user"
 SYSTEM_ROLE = "system"
 ASSISTANT_ROLE = "assistant"
-
-INITIAL_USER_INPUT = 'Determine which next command to use, and respond using the format specified above:'
 
 MODELS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "agents")
 
@@ -48,11 +46,16 @@ class BaseAgent:
         self.save()
 
     def wake(self):
+        log(f"Agent {self.name} is waking up")
         # Adds a pseudo user prompt to make the agent start the conversation
-        return self.chat(INITIAL_USER_INPUT)
+        return self.chat(self.config.get('default_user_input'))
 
-    def chat(self, user_input=INITIAL_USER_INPUT):
+    def chat(self, user_input=None):
+        user_input = user_input or self.config.get('default_user_input')
+
         context, remaining_tokens = self.create_context(user_input)
+
+        log(f"Agent {self.name} is chatting with user input: {user_input}")
 
         response = openai.ChatCompletion.create(
             model=self.config.get('model'),
@@ -63,6 +66,7 @@ class BaseAgent:
 
         new_response_json = response.choices[0].message["content"]
 
+        log(f"Agent {self.name} got response: {new_response_json}")
         # Update short term memory
         self.short_term_memory.add(self.create_message(USER_ROLE, user_input))
         self.short_term_memory.add(self.create_message(ASSISTANT_ROLE, new_response_json))
@@ -79,6 +83,8 @@ class BaseAgent:
         command = response['command']
 
         thoughts = response['thoughts']
+
+        log(f"Agent {self.name} is acting on command: {command} and thoughts: {thoughts}")
 
         self.write(thoughts)
 
@@ -98,9 +104,9 @@ class BaseAgent:
         # to change this behaviour you can move this block after the autonomous check
         if command_name == 'memory':
             # TODO: error if no command_args
-            command_args = command.get('command_args', {})
-            command_type = command_args.get('type', None)
-            self.execute_memory_command(command_name, command_args, command_type)
+            command_args = command.get('args', {})
+            command_type = command.get('type', None)
+            self.execute_memory_command(command_args, command_type)
             return
 
         can_continue = self.ask_for_permission(command)
@@ -112,10 +118,11 @@ class BaseAgent:
 
         command_result = execute_cmd(command)
 
+        log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
+
         self.add_command_result(command_name, command_result)
 
-        # Agent takes command feedback and updates its memory
-        self.chat()
+
 
     def ask_for_permission(self, command):
         if not self.config.get('autonomous'):
@@ -131,13 +138,11 @@ class BaseAgent:
 
         return True
 
-    def execute_memory_command(self, command_name, command_args, command_type):
-        if command_type == 'overwrite':
+    def execute_memory_command(self, command_args, command_type):
+        if command_type == 'add':
             self.long_term_memory.set(command_args['key'], command_args['value'])
         elif command_type == 'delete':
             self.long_term_memory.delete(command_args['key'])
-        elif command_type == 'add':
-            self.long_term_memory.add(command_args['value'])
 
     def write(self, thoughts):
         if not self.display_manager:
@@ -157,7 +162,7 @@ class BaseAgent:
         else:
             command_memory_entry = f"Command {command_name} returned: {command_result}"
 
-        self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry));
+        self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry))
 
     def add_human_feedback(self, user_input):
         result = f"Human feedback: {user_input}"

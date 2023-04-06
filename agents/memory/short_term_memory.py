@@ -12,6 +12,9 @@ class BaseMemory():
     def get(self):
         return self.memory
 
+    def extend(self, data):
+        self.memory.extend(data)
+
     def get_last_message(self, role):
         for i in range(len(self.memory) - 1, -1, -1):
             if self.memory[i]['role'] == role:

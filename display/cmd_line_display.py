@@ -11,7 +11,8 @@ USER_INPUT_STYLE = {
 
 
 class CmdLineDisplay(IDisplay):
-    def prompt_user_input(self, message="User Input: "):
+    def prompt_user_input(self, message="User Input:"):
+        message = message if message else "User Input: "
         return input(Fore.WHITE + message + Style.RESET_ALL)
 
     def print_agent_message(self, agent_name, message):
@@ -48,8 +49,7 @@ class CmdLineDisplay(IDisplay):
 
         if user_input == "y":
             print(Fore.LIGHTWHITE_EX + "-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=" + Style.RESET_ALL)
-        elif user_input == "n":
-            print(Fore.RED + "Exiting..." + Style.RESET_ALL)
+
         return command_name, user_input
 
     def print_agent_goals(self, goals, personal_goals):

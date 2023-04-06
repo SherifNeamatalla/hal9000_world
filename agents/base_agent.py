@@ -30,6 +30,7 @@ JSON_LOADING_ERROR = "Loading response JSON"
 
 MEMORY_COMMAND = "memory"
 USER_COMMAND = "user"
+SNOWFLAKE_COMMAND = "snowflake"
 
 
 class BaseAgent:
@@ -151,7 +152,9 @@ class BaseAgent:
             self.execute_memory_command(command_args, command_type)
             return
 
-        can_continue = self.ask_for_permission(command)
+        can_continue = True
+        if not command_name == SNOWFLAKE_COMMAND:
+            can_continue = self.ask_for_permission(command)
 
         if not can_continue:
             return
@@ -167,6 +170,8 @@ class BaseAgent:
         log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
 
         self.add_command_result(command_name, command_result)
+
+        self.display_manager.prompt_user_input(command_result)
 
     def execute_user_prompt_command(self, command_args, command_type):
         if command_type == 'prompt':
@@ -223,7 +228,7 @@ class BaseAgent:
 
         self.display_manager.print_error(command_memory_entry)
 
-    def add_command_result(self, command_name, command_result):
+    def add_command_result(self, command_name, command_result='None'):
         if not command_result:
             command_memory_entry = f"Unable to execute command {command_name}"
         else:
@@ -233,7 +238,7 @@ class BaseAgent:
 
     def add_human_feedback(self, user_input):
         result = f"Human feedback: {user_input}"
-        self.short_term_memory.add(self.create_message(SYSTEM_ROLE, result))
+        self.short_term_memory.add(self.create_message(USER_ROLE, result))
 
     def create_context(self, user_input):
         context = self.create_long_term_memory_context()

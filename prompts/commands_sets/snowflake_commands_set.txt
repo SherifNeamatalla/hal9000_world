@@ -1,0 +1,8 @@
+COMMANDS:
+1.Express emotion: name: "snowflake", args: "emotion": "<emotion>" type: "emotion"
+2.Share thought: name: "snowflake", args: "thought": "<thought>" type: "thought"
+3.Send message: name: "snowflake", args: "message": "<message>", "emotion": "<emotion>" type: "communicate"
+4.Generate compliment: name: "snowflake", args: "joke": "<joke>" type: "joke"
+5.Generate insult: name: "snowflake", args: "insult": "<insult>" type: "insult"
+
+

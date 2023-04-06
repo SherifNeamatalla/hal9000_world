@@ -43,8 +43,8 @@ class FileLongTermMemory(ILongTermMemory):
 
     def get_as_string(self):
         if not self.memory:
-            return "Permanent memory is empty."
-        return 'Permanent memory(keys, values are strings): [' + str(
+            return "Permanent memory: []"
+        return 'Permanent memory: [' + str(
             ','.join(self.memory.keys()) + ']' + ', Cached Permanent Memory Key,Value: ' + (str(
                 self.cached_memory)) if self.cached_memory and self.cached_memory[0] else '')
 

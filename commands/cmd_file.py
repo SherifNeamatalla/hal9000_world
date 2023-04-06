@@ -1,5 +1,7 @@
 import os
 
+import requests
+
 from commands.cmd_interface import ICmd
 from util.storage_loader import get_saved_agents, load_agent, delete_agent_data, GENERATED_DIR
 
@@ -22,6 +24,9 @@ class CmdFile(ICmd):
         if cmd_type == 'delete':
             return delete_file(cmd_args['file'])
 
+        if cmd_type == 'download':
+            return download(cmd_args['filename'], cmd_args['url'])
+
         pass
 
 
@@ -34,6 +39,12 @@ def read_file(filename):
     except Exception as e:
         return "Error: " + str(e)
 
+def download(filename, url):
+    response = requests.get(url)
+    filepath = safe_join(GENERATED_DIR, filename)
+    with open(filepath, 'wb') as out_file:
+        out_file.write(response.content)
+    return "File downloaded successfully."
 
 def write_to_file(filename, text):
     try:

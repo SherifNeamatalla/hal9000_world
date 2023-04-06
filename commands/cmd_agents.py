@@ -27,7 +27,7 @@ class CmdAgents(ICmd):
             return delete_agent(cmd_args['name'])
 
         if cmd_type == 'message':
-            return message_agent(cmd_args['name'], cmd_args['message'])
+            return message_agent(cmd_args['name'], cmd_args['message'], cmd_args['input'])
 
         pass
 
@@ -48,9 +48,10 @@ def delete_agent(name):
     return delete_agent_data(name)
 
 
-def message_agent(name, message):
+def message_agent(name, message, input):
+    user_input = message + '. Input: ' + input
     agent = load_agent(name)
-    return agent.chat(message)
+    return agent.chat(user_input)
 
 
 def load_agents():

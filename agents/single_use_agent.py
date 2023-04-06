@@ -2,18 +2,20 @@ import openai
 
 from agents.base_agent import BaseAgent
 from agents.config import AgentConfig
+from prompts.prompt_loader import load_commands_set
 
 SINGLE_USE_AGENT_TYPE = "SingleUseAgent"
 DEFAULT_USER_INPUT = 'Start working on the task on hand'
 
+SINGLE_USE_COMMANDS_SET = 'single_use_commands_set.txt'
+
 
 class SingleUserAgent(BaseAgent):
     def __init__(self, name, role, prompt, save_model=False):
-        config = AgentConfig(save_model=save_model, include_commands_set=False,
-                             include_constraints_resources_prompt=False,
-                             include_response_format_prompt=False, autonomous=True,
-                             max_tokens=600,
+        config = AgentConfig(save_model=save_model, autonomous=True,
+                             max_tokens=4000,
                              type=SINGLE_USE_AGENT_TYPE,
+                             commands_set_path=SINGLE_USE_COMMANDS_SET,
                              default_user_input=DEFAULT_USER_INPUT)  # You can play with this value to get better results
         super().__init__(name=name, role=role,
                          config=config)

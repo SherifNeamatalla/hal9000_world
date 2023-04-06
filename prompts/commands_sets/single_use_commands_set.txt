@@ -1,0 +1,6 @@
+COMMANDS:
+
+1. Google Search: name: "google", args: "input": "<search>" type: "search"
+2. Browse Website: name: "browser", args: "url": "<url>", "question": "<what_you_want_to_find_on_website>" type: "search"
+3. Download from URL: name: "browser", args: "url": "<url>", "filename": "<filename>" type: "download"
+4. Read file: name: "file", args: "file": "<file>" type: "read"

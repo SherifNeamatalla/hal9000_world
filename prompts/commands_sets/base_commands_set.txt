@@ -1,0 +1,17 @@
+COMMANDS:
+
+1. Google Search: name: "google", args: "input": "<search>" type: "search"
+2. Memory Field Set: name: "memory", args: "key": "<key>", "value": "<string>" type: "set"
+3. Memory Delete: name: "memory", args: "key": "<key>" type: "delete"
+4. Memory Get: name: "memory", args: "key": "<key>" type: "get"
+5. Browse Website: name: "browser", args: "url": "<url>", "question": "<what_you_want_to_find_on_website>" type: "search"
+6. Create new GPT Agent: name: "agents",  args: "name": <name>, "task": "<short_task_desc>", "prompt": "<prompt>", "save_for_later_use": "<save_for_later_use>" type: "create"
+7. Message existing GPT Agent: name: "agents", args: "name": "<name>", "message": "<message>", "input": "<input>" type: "message"
+8. List existing GPT Agents: name: "agents", args: "" type: "list"
+9. Delete existing GPT Agent: name: "agents", args: "key": "<key>" type: "delete"
+10. Download File from URL: name: "file", args: "url": "<url>", "filename": "<filename>" type: "download"
+11. Write to file: name: "file", args: "file": "<file>", "text": "<text>" type: "write"
+12. Read file: name: "file", args: "file": "<file>" type: "read"
+13. Append to file: name: "file", args: "file": "<file>", "text": "<text>" type: "append"
+14. Delete file: name: "file", args: "file": "<file>" type: "delete"
+15. Prompt User: name: "user", args: "prompt": "<prompt>" type: "prompt"

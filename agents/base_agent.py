@@ -15,7 +15,7 @@ from util import token_counter
 
 CONSTRAINTS_RESOURCES_PROMPT_NAME = "constraints_resources_prompt.txt"
 RESPONSE_FORMAT_PROMPT_NAME = "response_format_prompt.txt"
-BASE_COMMANDS_SET_NAME = "base_commands_prompt.txt"
+BASE_COMMANDS_SET_NAME = "base_commands_set.txt"
 
 USER_ROLE = "user"
 SYSTEM_ROLE = "system"
@@ -46,10 +46,7 @@ class BaseAgent:
         self.short_term_memory = BaseMemory(self.name)
         self.display_manager = display_manager
         self.voice_manager = voice_manager
-        # This is the prompt that that we use to initialize the agent
-        self.hello_world = None
         self.config = config
-        self.init_wakeup_prompt(self.config.get('commands_set_path'))
         self.save()
 
     def wake(self):
@@ -174,7 +171,7 @@ class BaseAgent:
     def execute_user_prompt_command(self, command_args, command_type):
         if command_type == 'prompt':
             user_input = self.display_manager.prompt_user_input(command_args['prompt'])
-            self.short_term_memory.add(self.create_message(USER_ROLE, user_input))
+            self.add_human_feedback(user_input)
 
     def ask_for_permission(self, command):
         if not self.config.get('autonomous'):
@@ -224,6 +221,8 @@ class BaseAgent:
 
         self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry))
 
+        self.display_manager.print_error(command_memory_entry)
+
     def add_command_result(self, command_name, command_result):
         if not command_result:
             command_memory_entry = f"Unable to execute command {command_name}"
@@ -249,10 +248,14 @@ class BaseAgent:
     def create_long_term_memory_context(self):
         # Add the Who you are, your goals, constraints, resources and response format
         # Add the permanent memory of the agent
-        return [self.create_message(SYSTEM_ROLE, self.hello_world),
+        user_goals = 'User Goals: ' + '\n' + '\n'.join(self.goals)
+        personal_goals = 'Personal Goals: ' + '\n' + '\n'.join(self.personal_goals)
+
+        message = self.hello_world(self.config.get('commands_set_path'), user_goals_str=user_goals,
+                                   personal_goals_str=personal_goals)
+
+        return [self.create_message(SYSTEM_ROLE, message),
                 self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string()),
-                self.create_message(SYSTEM_ROLE, 'User Goals: ' + '\n'.join(self.goals)),
-                self.create_message(SYSTEM_ROLE, 'Personal Goals: ' + '\n'.join(self.personal_goals)),
                 self.create_message(SYSTEM_ROLE, load_prompt(RESPONSE_FORMAT_PROMPT_NAME))]
 
     def create_short_term_memory_context(self, context, user_input):
@@ -297,19 +300,27 @@ class BaseAgent:
 
         return context, tokens_remaining
 
-    def init_wakeup_prompt(self, commands_set_path):
-        new_prompt = f"You are {self.name}, {self.role}"
+    def hello_world(self, commands_set_path, user_goals_str, personal_goals_str):
+        prompt_start = "Your decisions must always be made independently without seeking user assistance. Play to " \
+                       "your strengths as an LLM and pursue simple strategies with no legal complications.";
+        new_prompt = f"You are {self.name}, {self.role}\n{prompt_start}\n\n"
+
+        if user_goals_str:
+            new_prompt += "\n" + user_goals_str
+
+        if personal_goals_str:
+            new_prompt += "\n" + personal_goals_str
+
         if self.config.get('include_commands_set') and self.config.get('commands_set_path'):
             new_prompt += '\n' + load_commands_set(commands_set_path)
 
         if self.config.get('include_constraints_resources_prompt'):
             new_prompt += '\n' + load_prompt(CONSTRAINTS_RESOURCES_PROMPT_NAME)
 
-        # Trying to remove this as last prompt, so agent pays more attention to it
         # if self.config.get('include_response_format_prompt'):
         #     new_prompt += '\n' + load_prompt(RESPONSE_FORMAT_PROMPT_NAME)
 
-        self.hello_world = new_prompt
+        return new_prompt
 
     def save(self):
         if not self.config.get('save_model'):
@@ -330,7 +341,6 @@ class BaseAgent:
                 "role": self.role,
                 "model": self.config.get('model'),
                 "config": self.config.to_dict(),
-                "hello_world": self.hello_world,
                 "goals": self.goals,
                 "personal_goals": self.personal_goals
             }

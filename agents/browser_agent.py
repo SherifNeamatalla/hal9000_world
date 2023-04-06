@@ -13,10 +13,10 @@ class BrowserAgent(BaseAgent):
         super().__init__(name="Browser Agent", role='Web Browser agent for finding and summarizing information',
                          config=config)
 
-    def chat(self, messages):
+    def chat(self, user_input):
         response = openai.ChatCompletion.create(
             model=self.config.get('model'),
-            messages=messages,
+            messages=user_input,
             temperature=self.config.get('temperature'),
             max_tokens=300,
         )

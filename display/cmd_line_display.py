@@ -90,3 +90,6 @@ class CmdLineDisplay(IDisplay):
             print(Fore.WHITE + f"Result: " + Fore.GREEN + f"None" + Style.RESET_ALL, flush=True)
 
         pass
+
+    def print_error(self, command_memory_entry):
+        print(Fore.RED + f"{command_memory_entry}" + Style.RESET_ALL, flush=True)

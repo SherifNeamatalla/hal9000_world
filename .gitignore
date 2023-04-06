@@ -2,3 +2,4 @@
 .idea
 storage/agents/*
 venv
+/secrets/youtube_client_secret.json

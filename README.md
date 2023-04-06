@@ -42,7 +42,7 @@ this is something I'll have the time to try out here.
   message.
 
 - Added user command, so now the agent can prompt the user when it feels the need to, it is planned for the future to
-  have an option to turn this off so that it can run autonomously if you wish to do so.
+  have an option to turn this off so that it can run autonomously if you wish to do so. (Note: This is not recommended, when active the agent just asks the user all the time instead of figuring out stuff itself).
 - Commands now have name e.g "google","browser","file","memory", and type "search","create
   ,"delete" etc.., this makes it easier to create handling classes for specific API's/features, e.g a GoogleCalendar cmd handler that handles calendar events, and types like create, list events etc..
 - 

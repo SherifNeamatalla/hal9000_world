@@ -13,3 +13,6 @@ COMMANDS:
 12.Read file: name: "file", args: "file": "<file>" type: "read" - Read the contents of the given file.
 13.Append to file: name: "file", args: "file": "<file>", "text": "<text>" type: "append" - Append the given text to the given file.
 14.Delete file: name: "file", args: "file": "<file>" type: "delete" - Delete the given file.
+15.Youtube Video Data: name: "youtube", args: "url": "<url>" type: "get_video_data"
+16.Youtube Video Script: name: "youtube", args: "url": "<url>" type: "get_video_script"
+

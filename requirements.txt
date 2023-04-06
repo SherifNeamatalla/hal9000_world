@@ -12,3 +12,4 @@ json5~=0.9.11
 google_auth_oauthlib==1.0.0
 google-cloud-storage
 google-auth
+youtube-transcript-api

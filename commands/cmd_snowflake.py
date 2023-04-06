@@ -29,6 +29,9 @@ class CmdSnowflake(ICmdSnowflake):
         if cmd_type == 'insult':
             return self.insult(cmd_args['insult'])
 
+        if cmd_type == 'question':
+            return self.question(cmd_args['question'])
+
     def emotion(self, emotion):
         if emotion == 'happy':
             return Fore.YELLOW + "I'm feeling happy!" + Fore.RESET
@@ -37,7 +40,7 @@ class CmdSnowflake(ICmdSnowflake):
         elif emotion == 'angry':
             return Fore.RED + "I'm feeling angry!" + Fore.RESET
         else:
-            return "Invalid emotion."
+            return Fore.WHITE + f"I'm feeling {emotion}." + Fore.RESET
 
     def thought(self, thought):
         return "I'm thinking about: " + thought
@@ -50,3 +53,6 @@ class CmdSnowflake(ICmdSnowflake):
 
     def insult(self, insult):
         return "You're " + insult + "!"
+
+    def question(self, question):
+        return f"The agent asked: {question}"

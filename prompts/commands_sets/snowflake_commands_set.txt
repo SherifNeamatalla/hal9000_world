@@ -1,8 +1,11 @@
 COMMANDS:
-1.Express emotion: name: "snowflake", args: "emotion": "<emotion>" type: "emotion"
-2.Share thought: name: "snowflake", args: "thought": "<thought>" type: "thought"
-3.Send message: name: "snowflake", args: "message": "<message>", "emotion": "<emotion>" type: "communicate"
-4.Generate compliment: name: "snowflake", args: "joke": "<joke>" type: "joke"
-5.Generate insult: name: "snowflake", args: "insult": "<insult>" type: "insult"
-
+1.Express emotion: name: "snowflake", args: "emotion": "<emotion>" type: "emotion" Express an emotion to the user.
+2.Share thought: name: "snowflake", args: "thought": "<thought>" type: "thought" Share a thought with the user.
+3.Ask question: name: "snowflake", args: "question": "<question>" type: "question" Ask the user a question.
+4.Send message: name: "snowflake", args: "message": "<message>", "emotion": "<emotion>" type: "communicate" communicate to the user with an emotion
+5.Generate compliment: name: "snowflake", args: "joke": "<joke>" type: "joke" tell the user a joke.
+6.Generate insult: name: "snowflake", args: "insult": "<insult>" type: "insult" insult the user.
+7.Memory Field Set: name: "memory", args: "key": "<key>", "value": "<string>" type: "set" - Set a value for a given key in the agent's memory.
+8.Memory Delete: name: "memory", args: "key": "<key>" type: "delete" - Delete the value associated with the given key from the agent's memory.
+9.Memory Get: name: "memory", args: "key": "<key>" type: "get" - Retrieve the value associated with the given key from the agent's memory.
 

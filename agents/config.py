@@ -1,6 +1,7 @@
 from agents.base_agent import BASE_AGENT_TYPE
 
 INITIAL_USER_INPUT = 'Determine which next command to use, and respond using the format specified above:'
+DEFAULT_START_PROMPT_PATH = 'default_start_prompt.txt'
 
 
 class AgentConfig:
@@ -10,6 +11,7 @@ class AgentConfig:
                  temperature=0.1, top_p=1, frequency_penalty=0, presence_penalty=0,
                  include_constraints_resources_prompt=True, include_response_format_prompt=True,
                  include_commands_set=True, save_model=True, autonomous=False, type=BASE_AGENT_TYPE,
+                 prompt_start_path=DEFAULT_START_PROMPT_PATH,
                  default_user_input=INITIAL_USER_INPUT, max_personal_goals=5):
         self.config_map = {
             'type': type,
@@ -19,6 +21,7 @@ class AgentConfig:
             'autonomous': autonomous,
             'max_tokens': max_tokens,
             'temperature': temperature,
+            'prompt_start_path': prompt_start_path,
             'presence_penalty': presence_penalty,
             'frequency_penalty': frequency_penalty,
             'commands_set_path': commands_set_path,

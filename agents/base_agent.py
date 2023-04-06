@@ -171,7 +171,9 @@ class BaseAgent:
 
         self.add_command_result(command_name, command_result)
 
-        self.display_manager.prompt_user_input(command_result)
+        if command_name == SNOWFLAKE_COMMAND:
+            user_input = self.display_manager.prompt_user_input(command_result)
+            self.add_human_feedback(user_input)
 
     def execute_user_prompt_command(self, command_args, command_type):
         if command_type == 'prompt':
@@ -232,7 +234,8 @@ class BaseAgent:
         if not command_result:
             command_memory_entry = f"Unable to execute command {command_name}"
         else:
-            command_memory_entry = f"Command {command_name} returned: {command_result}"
+            command_memory_entry = f"Command {command_name} returned: {command_result}, save important information in " \
+                                   f"memory!"
 
         self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry))
 
@@ -306,8 +309,7 @@ class BaseAgent:
         return context, tokens_remaining
 
     def hello_world(self, commands_set_path, user_goals_str, personal_goals_str):
-        prompt_start = "Your decisions must always be made independently without seeking user assistance."
-        prompt_start += '\n\n' + "Play to your strengths as an LLM and pursue simple strategies with no legal complications."
+        prompt_start = load_prompt(self.config.get('prompt_start_path'))
         new_prompt = f"You are {self.name}, {self.role}\n{prompt_start}\n\n"
 
         if user_goals_str:

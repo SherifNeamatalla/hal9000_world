@@ -39,6 +39,11 @@ class AutoGptRunner(IRunner):
             # Get user input to initialize the agent
             name = display.prompt_user_input("Enter the name of the agent: ")
             role = display.prompt_user_input("Enter the role of the agent: ")
+            prompt_start_path = display.prompt_user_input("Enter the prompt start path: (Leave empty for default)")
+
+            if prompt_start_path == "":
+                prompt_start_path = None
+
             goals = []
 
             while True:
@@ -52,7 +57,7 @@ class AutoGptRunner(IRunner):
             if commands_set_path == "":
                 commands_set_path = BASE_COMMANDS_SET_NAME
 
-            config = AgentConfig(commands_set_path=commands_set_path)
+            config = AgentConfig(commands_set_path=commands_set_path, prompt_start_path=prompt_start_path)
 
             # Initialize the agent
             agent = BaseAgent(name=name, role=role, config=config, goals=goals)

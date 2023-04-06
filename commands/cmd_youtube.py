@@ -1,15 +1,11 @@
 import json
 import os
 
-import google.auth
-import google.auth.transport.requests
-import google.oauth2.credentials
-import googleapiclient.discovery
-import googleapiclient.discovery
-import googleapiclient.errors
-import googleapiclient.errors
 import requests
 from dotenv import load_dotenv
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 from commands.cmd_interface import ICmd
 
@@ -18,7 +14,7 @@ load_dotenv()
 
 class CmdYoutube(ICmd):
     API_BASE_URL = 'https://www.googleapis.com/youtube/v3'
-    API_KEY = os.getenv('YOUTUBE_API_KEY')
+    SERVICE_ACCOUNT_FILE = os.getenv('SERVICE_ACCOUNT_FILE')
 
     def __init__(self):
         pass
@@ -50,28 +46,41 @@ class CmdYoutube(ICmd):
         # Extract the video ID from the URL
         video_id = url.split('v=')[1]
 
-        flow = google.auth.flow.InstalledAppFlow.from_client_secrets_file(
-            client_secrets_file,
-            scopes=['https://www.googleapis.com/auth/youtube.force-ssl']
-        )
-        credentials = flow.run_local_server()
-        # Create a YouTube API client
-        youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=self.API_KEY)
+        if not video_id:
+            return 'Invalid YouTube video URL.'
 
-        # Retrieve the video caption tracks
-        caption_tracks = youtube.captions().list(
-            part='id',
+        # Authenticate with the YouTube Data API
+
+        credentials = self.get_credentials()
+        # if not credentials or not credentials.valid:
+        #     if credentials and credentials.expired and credentials.refresh_token:
+        #         credentials.refresh(Request())
+        #     else:
+        #         return 'Unable to authenticate with the YouTube Data API.'
+
+        youtube = build('youtube', 'v3', credentials=credentials)
+
+        # Retrieve the captions for the video
+        caption_request = youtube.captions().list(
+            part='snippet',
             videoId=video_id
-        ).execute()
+        )
 
-        # Retrieve the captions for each track
-        captions = []
-        for track in caption_tracks['items']:
-            caption = youtube.captions().download(
-                id=track['id'],
-                tfmt='vtt'
-            ).execute()
-            captions.append(caption)
+        caption_response = caption_request.execute()
 
-        # Return the captions as a list of VTT files
-        return captions
+        # Extract the transcript from the caption track
+        transcript_url = caption_response['items'][0]['snippet']['trackUrl']
+        transcript_request = requests.get(transcript_url)
+        transcript_lines = transcript_request.text.strip().split('\n')[1:]
+
+        transcript = ''
+        for line in transcript_lines:
+            if line.strip():
+                transcript += line.strip() + ' '
+
+        return transcript.strip()
+
+    def get_credentials(self, ):
+        return service_account.Credentials.from_service_account_file(
+            self.SERVICE_ACCOUNT_FILE,
+            scopes=['https://www.googleapis.com/auth/cloud-platform'])

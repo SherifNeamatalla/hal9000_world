@@ -3,7 +3,9 @@ from pathlib import Path
 import shutil
 import yaml
 
-AGENTS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "agents")
+STORAGE_DIR = os.path.join(Path(__file__).parent.parent, "storage")
+AGENTS_DIR = os.path.join(STORAGE_DIR, "agents")
+GENERATED_DIR = os.path.join(STORAGE_DIR, "generated")
 
 
 def load_agent(agent_name):

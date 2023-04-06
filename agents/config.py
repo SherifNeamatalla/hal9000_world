@@ -10,7 +10,7 @@ class AgentConfig:
                  temperature=0.1, top_p=1, frequency_penalty=0, presence_penalty=0,
                  include_constraints_resources_prompt=True, include_response_format_prompt=True,
                  include_commands_set=True, save_model=True, autonomous=False, type=BASE_AGENT_TYPE,
-                 default_user_input=INITIAL_USER_INPUT):
+                 default_user_input=INITIAL_USER_INPUT, max_personal_goals=5):
         self.config_map = {
             'type': type,
             'model': model,
@@ -23,6 +23,7 @@ class AgentConfig:
             'frequency_penalty': frequency_penalty,
             'commands_set_path': commands_set_path,
             'default_user_input': default_user_input,
+            'max_personal_goals': max_personal_goals,
             'include_commands_set': include_commands_set,
             'include_response_format_prompt': include_response_format_prompt,
             'include_constraints_resources_prompt': include_constraints_resources_prompt,

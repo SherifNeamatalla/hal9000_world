@@ -33,10 +33,12 @@ USER_COMMAND = "user"
 
 
 class BaseAgent:
-    def __init__(self, name, role, config, display_manager=CmdLineDisplay(), voice_manager=None):
+    def __init__(self, name, role, config, goals=[], display_manager=CmdLineDisplay(), voice_manager=None):
         # This holds the long term memory, agent decides what to store here
         self.name = name
         self.role = role
+        self.goals = goals
+        self.personal_goals = []
         # TODO: Should be able to load this from a config and a factory
         self.long_term_memory = FileLongTermMemory(self.name)
         # This holds the current conversation
@@ -56,14 +58,15 @@ class BaseAgent:
 
     def chat(self, user_input=None):
         # Can happen after user prompt that last message is from user, use that instead of default if no user input
-        # is given
+        # is given, but always add the default prompt as this will keep reminding the agent to stick to the format etc
         if not user_input:
             # If last message was a user don't add another one
             last_message = self.short_term_memory.get_last_message()
             if last_message and last_message['role'] == USER_ROLE:
-                user_input = last_message['content']
+                user_input = last_message['content'] + " and " + self.config.get('default_user_input')
             else:
-                user_input = user_input or self.config.get('default_user_input')
+                user_input = user_input + self.config.get('default_user_input') if user_input else self.config.get(
+                    'default_user_input')
 
         context, remaining_tokens = self.create_context(user_input)
 
@@ -106,12 +109,20 @@ class BaseAgent:
 
         self.speak(thoughts)
 
+        self.plan(thoughts)
+
         try:
             self.execute_command(command)
         except Exception as e:
             self.add_error_command(command['name'], e)
 
         # TODO use reasoning, plan, criticism
+
+    def plan(self, thoughts):
+        self.personal_goals = thoughts['plan'].split('\n')
+
+        if len(self.personal_goals) > self.config.get('max_personal_goals'):
+            self.personal_goals = self.personal_goals[:self.config.get('max_personal_goals')]
 
     def execute_command(self, command):
         if not command or not command['name']:
@@ -219,7 +230,9 @@ class BaseAgent:
         # Add the Who you are, your goals, constraints, resources and response format
         # Add the permanent memory of the agent
         return [self.create_message(SYSTEM_ROLE, self.hello_world),
-                self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string())]
+                self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string()),
+                self.create_message(SYSTEM_ROLE, 'User Goals: ' + '\n'.join(self.goals)),
+                self.create_message(SYSTEM_ROLE, 'Personal Goals: ' + '\n'.join(self.personal_goals))]
 
     def create_short_term_memory_context(self, context, user_input):
         # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the

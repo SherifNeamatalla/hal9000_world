@@ -21,10 +21,13 @@ class CmdLineDisplay(IDisplay):
         command_name = command['name']
         command_args = command.get('args', {})
         command_type = command.get('type', None)
-        print(Fore.WHITE + f"Requesting permission to execute command: " + Fore.GREEN + f"{command_name}" + Style.RESET_ALL, flush=True)
+        print(
+            Fore.WHITE + f"Requesting permission to execute command: " + Fore.GREEN + f"{command_name}" + Style.RESET_ALL,
+            flush=True)
 
         if command_args:
-            print(Fore.WHITE + f"Command arguments: " + Fore.GREEN + f"{json.dumps(command_args)}" + Style.RESET_ALL, flush=True)
+            print(Fore.WHITE + f"Command arguments: " + Fore.GREEN + f"{json.dumps(command_args)}" + Style.RESET_ALL,
+                  flush=True)
 
         if command_type:
             print(Fore.WHITE + f"Command type: " + Fore.GREEN + f"{command_type}" + Style.RESET_ALL, flush=True)
@@ -63,7 +66,8 @@ class CmdLineDisplay(IDisplay):
         print(Fore.WHITE + f"Executing command: " + Fore.GREEN + f"{command_name}" + Style.RESET_ALL, flush=True)
 
         if command_args:
-            print(Fore.WHITE + f"Command arguments: " + Fore.GREEN + f"{json.dumps(command_args)}" + Style.RESET_ALL, flush=True)
+            print(Fore.WHITE + f"Command arguments: " + Fore.GREEN + f"{json.dumps(command_args)}" + Style.RESET_ALL,
+                  flush=True)
 
         if command_type:
             print(Fore.WHITE + f"Command type: " + Fore.GREEN + f"{command_type}" + Style.RESET_ALL, flush=True)
@@ -73,3 +77,13 @@ class CmdLineDisplay(IDisplay):
 
     def print_agent_criticism(self, criticism):
         print(Fore.RED + f"Criticism: {criticism}" + Style.RESET_ALL, flush=True)
+
+    def print_command_result(self, command_name, command_result):
+        print(Fore.WHITE + f"Command: " + Fore.GREEN + f"{command_name}" + Style.RESET_ALL, flush=True)
+
+        if command_result:
+            print(Fore.WHITE + f"Result: " + Fore.GREEN + f"{json.dumps(command_result)}" + Style.RESET_ALL, flush=True)
+        else:
+            print(Fore.WHITE + f"Result: " + Fore.GREEN + f"None" + Style.RESET_ALL, flush=True)
+
+        pass

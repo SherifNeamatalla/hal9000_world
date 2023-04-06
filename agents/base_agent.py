@@ -165,6 +165,8 @@ class BaseAgent:
 
         command_result = execute_cmd(command)
 
+        self.display_manager.print_command_result(command_name, command.get('args', {}), command_result)
+
         log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
 
         self.add_command_result(command_name, command_result)
@@ -190,13 +192,16 @@ class BaseAgent:
 
     def execute_memory_command(self, command_args, command_type):
         self.display_manager.print_executing_command(MEMORY_COMMAND, command_args, command_type)
+        command_result = None
         if command_type == 'set':
-            self.long_term_memory.set(command_args['key'], command_args['value'])
+            command_result = self.long_term_memory.set(command_args['key'], command_args['value'])
         elif command_type == 'delete':
-            self.long_term_memory.delete(command_args['key'])
+            command_result = self.long_term_memory.delete(command_args['key'])
         elif command_type == 'get':
-            result = self.long_term_memory.get(command_args['key'])
-            self.add_command_result(MEMORY_COMMAND, result)
+            command_result = self.long_term_memory.get(command_args['key'])
+            self.add_command_result(MEMORY_COMMAND, command_result)
+
+        self.display_manager.print_command_result(MEMORY_COMMAND, command_result)
 
     def write(self, thoughts):
         if not self.display_manager:

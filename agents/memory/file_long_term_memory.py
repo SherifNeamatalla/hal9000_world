@@ -4,7 +4,7 @@ from pathlib import Path
 
 from agents.memory.long_term_memory_interface import ILongTermMemory
 
-STORAGE_PATH = os.path.join(Path(__file__).parent.parent.parent, "storage", "models")
+STORAGE_PATH = os.path.join(Path(__file__).parent.parent.parent, "storage", "agents")
 
 
 class FileLongTermMemory(ILongTermMemory):

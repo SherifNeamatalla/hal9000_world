@@ -3,10 +3,10 @@ import openai
 from agents.base_agent import BaseAgent
 from agents.config import AgentConfig
 
+SINGLE_USE_AGENT_TYPE = "SingleUseAgent"
 
-BROWSER_AGENT_TYPE = "BrowserAgent"
 
-class BrowserAgent(BaseAgent):
+class SingleUserAgent(BaseAgent):
     def __init__(self):
         config = AgentConfig(save_model=False, include_commands_set=False, include_constraints_resources_prompt=False,
                              include_response_format_prompt=False, autonomous=True)

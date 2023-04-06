@@ -3,7 +3,9 @@ import os.path
 from pathlib import Path
 
 import openai
+import yaml
 
+from agents.config import AgentConfig
 from agents.memory.file_long_term_memory import FileLongTermMemory
 from agents.memory.short_term_memory import BaseMemory
 from commands.commands_executor import execute_cmd
@@ -21,20 +23,19 @@ ASSISTANT_ROLE = "assistant"
 
 INITIAL_USER_INPUT = 'Determine which next command to use, and respond using the format specified above:'
 
-MODELS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "models")
+MODELS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "agents")
+
+ACTION_DENIED = "Action denied"
+
+BASE_AGENT_TYPE = "BaseAgent"
 
 
 class BaseAgent:
-    def __init__(self, name, role, display_manager=CmdLineDisplay(), voice_manager=None,
-                 commands_set_path=BASE_COMMANDS_SET_NAME,
-                 model='gpt-3.5-turbo', max_tokens=4000,
-                 temperature=0.1, top_p=1, frequency_penalty=0, presence_penalty=0,
-                 include_constraints_resources_prompt=True, include_response_format_prompt=True,
-                 include_commands_set=True, save_model=True):
+    def __init__(self, name, role, config, display_manager=CmdLineDisplay(), voice_manager=None):
         # This holds the long term memory, agent decides what to store here
         self.name = name
         self.role = role
-        # TOOD: Should be able to load this from a file
+        # TODO: Should be able to load this from a config and a factory
         self.long_term_memory = FileLongTermMemory(self.name)
         # This holds the current conversation
         self.short_term_memory = BaseMemory(self.name)
@@ -42,19 +43,8 @@ class BaseAgent:
         self.voice_manager = voice_manager
         # This is the prompt that that we use to initialize the agent
         self.hello_world = None
-        self.config = {
-            'model': model,
-            'max_tokens': max_tokens,
-            'temperature': temperature,
-            'top_p': top_p,
-            'frequency_penalty': frequency_penalty,
-            'presence_penalty': presence_penalty,
-            'include_constraints_resources_prompt': include_constraints_resources_prompt,
-            'include_response_format_prompt': include_response_format_prompt,
-            'include_commands_set': include_commands_set,
-            'save_model': save_model,
-        }
-        self.init_wakeup_prompt(commands_set_path)
+        self.config = config
+        self.init_wakeup_prompt(self.config.get('commands_set_path'))
         self.save()
 
     def wake(self):
@@ -65,9 +55,9 @@ class BaseAgent:
         context, remaining_tokens = self.create_context(user_input)
 
         response = openai.ChatCompletion.create(
-            model=self.config['model'],
+            model=self.config.get('model'),
             messages=context,
-            temperature=self.config['temperature'],
+            temperature=self.config.get('temperature'),
             max_tokens=remaining_tokens,
         )
 
@@ -79,7 +69,10 @@ class BaseAgent:
 
         return new_response_json
 
-    def act(self, response_json):
+    def act(self):
+        # Find the last message from the assistant to act upon it
+        response_json = self.short_term_memory.get_last_message(ASSISTANT_ROLE)
+
         response = json.loads(response_json)
 
         # Has name and args
@@ -101,6 +94,8 @@ class BaseAgent:
 
         command_name = command['name']
 
+        # This hardcodes the agent to be able to automatically update its memory without user permission
+        # to change this behaviour you can move this block after the autonomous check
         if command_name == 'memory':
             # TODO: error if no command_args
             command_args = command.get('command_args', {})
@@ -108,13 +103,33 @@ class BaseAgent:
             self.execute_memory_command(command_name, command_args, command_type)
             return
 
+        can_continue = self.ask_for_permission(command)
+
+        if not can_continue:
+            return
+
+        command_name = command['name']
+
         command_result = execute_cmd(command)
 
         self.add_command_result(command_name, command_result)
 
         # Agent takes command feedback and updates its memory
-        # TODO : here we can add premission from user to avoid 100% autonomy
         self.chat()
+
+    def ask_for_permission(self, command):
+        if not self.config.get('autonomous'):
+            command_name, user_input = self.display_manager.ask_permission(self.name, command)
+
+            if user_input == 'n':
+                self.add_human_feedback(ACTION_DENIED)
+                return False
+
+            if command_name == "human_feedback":
+                self.add_human_feedback(user_input)
+                return False
+
+        return True
 
     def execute_memory_command(self, command_name, command_args, command_type):
         if command_type == 'overwrite':
@@ -144,6 +159,10 @@ class BaseAgent:
 
         self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry));
 
+    def add_human_feedback(self, user_input):
+        result = f"Human feedback: {user_input}"
+        self.short_term_memory.add(self.create_message(SYSTEM_ROLE, result))
+
     def create_context(self, user_input):
         context = self.create_long_term_memory_context()
 
@@ -162,12 +181,12 @@ class BaseAgent:
 
     def create_short_term_memory_context(self, context, user_input):
         # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the
-        # right length of the short term memory, shouldn't exceed self.config['max_tokens']
+        # right length of the short term memory, shouldn't exceed self.config.get('max_tokens')
 
         # Add the user input
         full_message_history = self.short_term_memory.get()
-        model = self.config['model']
-        token_limit = self.config['max_tokens'] - token_counter.count_message_tokens(context, model)
+        model = self.config.get('model')
+        token_limit = self.config.get('max_tokens') - token_counter.count_message_tokens(context, model)
         send_token_limit = token_limit - 1000
         next_message_to_add_index = len(full_message_history) - 1
         current_tokens_used = 0
@@ -204,18 +223,18 @@ class BaseAgent:
 
     def init_wakeup_prompt(self, commands_set_path):
         new_prompt = f"You are {self.name}, {self.role}"
-        if self.config['include_constraints_resources_prompt']:
+        if self.config.get('include_constraints_resources_prompt'):
             new_prompt += '\n' + load_prompt(CONSTRAINTS_RESOURCES_PROMPT_NAME)
 
-        if self.config['include_response_format_prompt']:
+        if self.config.get('include_response_format_prompt'):
             new_prompt += '\n' + load_prompt(RESPONSE_FORMAT_PROMPT_NAME)
 
-        if self.config['include_commands_set']:
+        if self.config.get('include_commands_set') and self.config.get('commands_set_path'):
             new_prompt += '\n' + load_commands_set(commands_set_path)
         self.hello_world = new_prompt
 
     def save(self):
-        if not self.config['save_model']:
+        if not self.config.get('save_model'):
             return
         agent_path = os.path.join(MODELS_DIR, self.name)
         # create new dir if not exists
@@ -226,6 +245,16 @@ class BaseAgent:
             os.makedirs(agent_path)
 
         self.long_term_memory.save()
+
+        with open(os.path.join(agent_path, 'config.yaml'), 'w') as outfile:
+            yaml_content = {
+                "name": self.name,
+                "role": self.role,
+                "model": self.config.get('model'),
+                "config": self.config.to_dict(),
+                "hello_world": self.hello_world,
+            }
+            yaml.dump(yaml_content, outfile, default_flow_style=False)
 
     @staticmethod
     def create_message(role, content):

@@ -12,6 +12,12 @@ class BaseMemory():
     def get(self):
         return self.memory
 
+    def get_last_message(self, role):
+        for i in range(len(self.memory) - 1, -1, -1):
+            if self.memory[i]['role'] == role:
+                return self.memory[i]['content']
+        return None
+
     def get_as_string(self):
         return '[' + ','.join(self.memory) + ']'
 

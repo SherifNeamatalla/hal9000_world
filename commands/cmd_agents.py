@@ -8,9 +8,17 @@ class CmdAgents(ICmd):
         pass
 
     def execute(self, cmd_args, cmd_type='search'):
-        if cmd_type == 'start':
+        if cmd_type == 'create':
             return start_agent(cmd_args['name'], cmd_args['task'], cmd_args['prompt'],
                                cmd_args['save_for_later_use'])
+
+        if cmd_type == 'get':
+            agents = list_agents()
+
+            for agent in agents:
+                if agent['name'] == cmd_args['name']:
+                    return agent
+            return 'Agent not found'
 
         if cmd_type == 'list':
             return list_agents()
@@ -33,25 +41,16 @@ def start_agent(name, task, prompt, save_for_later_use=False):
 
 
 def list_agents():
-    result_str = 'NAME|ROLE|TYPE\n'
-
-    agents = load_agents()
-
-    for agent in agents:
-        result_str += f'{agent["name"]}|{agent["role"]}|{agent["type"]}\n'
-
     return load_agents()
 
 
 def delete_agent(name):
-    delete_agent_data(name)
-    pass
+    return delete_agent_data(name)
 
 
 def message_agent(name, message):
     agent = load_agent(name)
-    agent.chat(message)
-    pass
+    return agent.chat(message)
 
 
 def load_agents():

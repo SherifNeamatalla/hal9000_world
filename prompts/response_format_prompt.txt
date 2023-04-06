@@ -26,4 +26,4 @@ RESPONSE FORMAT:
     }
 }
 
-Ensure the response can be parsed by Python json.loads
+Ensure the response can be parsed by Python json.loads, this is a must.

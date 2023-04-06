@@ -55,5 +55,7 @@ def delete_agent_data(agent_name):
     agent_path = os.path.join(AGENTS_DIR, agent_name)
     try:
         os.remove(agent_path)
+        return 'Agent deleted successfully'
     except:
         shutil.rmtree(agent_path)
+        return 'Agent deleted successfully'

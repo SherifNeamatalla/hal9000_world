@@ -11,6 +11,32 @@ from commands.registered_commands import REGISTERED_COMMANDS_MAP
 def get_command_executor(cmd_name) -> ICmd:
     return REGISTERED_COMMANDS_MAP[cmd_name]
 
+# elif command_name == "get_text_summary":
+# return get_text_summary(arguments["url"], arguments["question"])
+# elif command_name == "get_hyperlinks":
+# return get_hyperlinks(arguments["url"])
+# elif command_name == "read_file":
+# return read_file(arguments["file"])
+# elif command_name == "write_to_file":
+# return write_to_file(arguments["file"], arguments["text"])
+# elif command_name == "append_to_file":
+# return append_to_file(arguments["file"], arguments["text"])
+# elif command_name == "delete_file":
+# return delete_file(arguments["file"])
+# elif command_name == "browse_website":
+# return browse_website(arguments["url"], arguments["question"])
+# # TODO: Change these to take in a file rather than pasted code, if
+# # non-file is given, return instructions "Input should be a python
+# # filepath, write your code to file and try again"
+# elif command_name == "evaluate_code":
+# return ai.evaluate_code(arguments["code"])
+# elif command_name == "improve_code":
+# return ai.improve_code(arguments["suggestions"], arguments["code"])
+# elif command_name == "write_tests":
+# return ai.write_tests(arguments["code"], arguments.get("focus"))
+# elif command_name == "execute_python_file":  # Add this command
+# return execute_python_file(arguments["file"])
+# elif command_name == "task_complete":
 
 def execute_cmd(command):
     cmd_name = command["name"]

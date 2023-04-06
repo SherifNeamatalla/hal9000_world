@@ -29,6 +29,7 @@ BASE_AGENT_TYPE = "BaseAgent"
 JSON_LOADING_ERROR = "Loading response JSON"
 
 MEMORY_COMMAND = "memory"
+USER_COMMAND = "user"
 
 
 class BaseAgent:
@@ -54,7 +55,15 @@ class BaseAgent:
         return self.chat(self.config.get('default_user_input'))
 
     def chat(self, user_input=None):
-        user_input = user_input or self.config.get('default_user_input')
+        # Can happen after user prompt that last message is from user, use that instead of default if no user input
+        # is given
+        if not user_input:
+            # If last message was a user don't add another one
+            last_message = self.short_term_memory.get_last_message()
+            if last_message and last_message['role'] == USER_ROLE:
+                user_input = last_message['content']
+            else:
+                user_input = user_input or self.config.get('default_user_input')
 
         context, remaining_tokens = self.create_context(user_input)
 
@@ -110,9 +119,16 @@ class BaseAgent:
 
         command_name = command['name']
 
+        # If agent needs some user input to continue, ask for it
+        if command_name == USER_COMMAND:
+            command_args = command.get('args', {})
+            command_type = command.get('type', None)
+            self.execute_user_prompt_command(command_args, command_type)
+            return
+
         # This hardcodes the agent to be able to automatically update its memory without user permission
         # to change this behaviour you can move this block after the autonomous check
-        if command_name == 'memory':
+        if command_name == MEMORY_COMMAND:
             # TODO: error if no command_args
             command_args = command.get('args', {})
             command_type = command.get('type', None)
@@ -131,6 +147,11 @@ class BaseAgent:
         log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
 
         self.add_command_result(command_name, command_result)
+
+    def execute_user_prompt_command(self, command_args, command_type):
+        if command_type == 'prompt':
+            user_input = self.display_manager.prompt_user_input(command_args['prompt'])
+            self.add_command_result(USER_COMMAND, user_input)
 
     def ask_for_permission(self, command):
         if not self.config.get('autonomous'):

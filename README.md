@@ -32,8 +32,19 @@ this is something I'll have the time to try out here.
 4. File output
 
 ### Differences to Auto-GPT
-One of the additions made is the idea of user goals vs personal goals, where the agent can have its own short term goals, and the user long term goals always in sight. This is more helpful for having a long term goal assistant, which is what am mainly aiming for here.
 
-I also changed the long term memory to a dict instead of list, showing the agent just the key and caching the latest used value. This is for saving more tokens instead of having all the permanent memory always loaded in the chat message.
+- One of the additions made is the idea of user goals vs personal goals, where the agent can have its own short term
+  goals, and the user long term goals always in sight. This is more helpful for having a long term goal assistant, which
+  is what am mainly aiming for here.
 
-This was created by sensei, the very first hello_world agent :)
+- I also changed the long term memory to a dict instead of list, showing the agent just the key and caching the latest
+  used value. This is for saving more tokens instead of having all the permanent memory always loaded in the chat
+  message.
+
+- Added user command, so now the agent can prompt the user when it feels the need to, it is planned for the future to
+  have an option to turn this off so that it can run autonomously if you wish to do so.
+- Commands now have name e.g "google","browser","file","memory", and type "search","create
+  ,"delete" etc.., this makes it easier to create handling classes for specific API's/features, e.g a GoogleCalendar cmd handler that handles calendar events, and types like create, list events etc..
+- 
+
+  This was created by sensei, the very first hello_world agent :)

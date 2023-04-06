@@ -78,6 +78,9 @@ class CmdLineDisplay(IDisplay):
     def print_agent_criticism(self, criticism):
         print(Fore.RED + f"Criticism: {criticism}" + Style.RESET_ALL, flush=True)
 
+    def print_agent_reasoning(self, reasoning):
+        print(Fore.CYAN + f"Reasoning: {reasoning}" + Style.RESET_ALL, flush=True)
+
     def print_command_result(self, command_name, command_result):
         print(Fore.WHITE + f"Command: " + Fore.GREEN + f"{command_name}" + Style.RESET_ALL, flush=True)
 

@@ -165,7 +165,7 @@ class BaseAgent:
 
         command_result = execute_cmd(command)
 
-        self.display_manager.print_command_result(command_name, command.get('args', {}), command_result)
+        self.display_manager.print_command_result(command_name, command_result)
 
         log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
 
@@ -210,6 +210,8 @@ class BaseAgent:
         self.display_manager.print_agent_message(self.name, thoughts['text'])
 
         self.display_manager.print_agent_criticism(thoughts['criticism'])
+
+        self.display_manager.print_agent_reasoning(thoughts['reasoning'])
 
     def speak(self, thoughts):
         if not self.voice_manager:

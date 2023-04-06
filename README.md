@@ -45,6 +45,7 @@ this is something I'll have the time to try out here.
   have an option to turn this off so that it can run autonomously if you wish to do so. (Note: This is not recommended, when active the agent just asks the user all the time instead of figuring out stuff itself).
 - Commands now have name e.g "google","browser","file","memory", and type "search","create
   ,"delete" etc.., this makes it easier to create handling classes for specific API's/features, e.g a GoogleCalendar cmd handler that handles calendar events, and types like create, list events etc..
-- 
+
+- SNOWFLAKE ADDED !! The emotional snowflake, totally useless in real life problems, amazing to talk to and have someone to listen to you. try it out by loading snow_flake_commands_set and snow_flake_prompt_start as args for config, better documentation coming soon! 
 
   This was created by sensei, the very first hello_world agent :)

@@ -11,15 +11,15 @@ STORAGE_PATH = os.path.join(Path(__file__).parent.parent.parent, "storage", "age
 
 
 class FileLongTermMemory(ILongTermMemory):
-    def __init__(self, agent_name):
-        self.memory = {}
+    def __init__(self, agent_name, old_memory=""):
+        self.memory = self.load_from_string(old_memory)
         self.cached_memory = []
         self.agent_name = agent_name
-        self.load_if_exists()
+        # Uncomment this if u'r not using a db
+        # self.load_if_exists()
 
     def set(self, key, value):
         self.memory[key] = value
-        self.save()
         self.cache(key, value)
 
     def get(self, key):
@@ -28,7 +28,6 @@ class FileLongTermMemory(ILongTermMemory):
 
     def delete(self, key):
         del self.memory[key]
-        self.save()
 
         if self.cached_memory and self.cached_memory[0]['key'] == key:
             self.cached_memory.pop(0)
@@ -50,11 +49,14 @@ class FileLongTermMemory(ILongTermMemory):
 
     def clear(self):
         self.memory = []
-        self.save()
 
-    def save(self):
-        with open(os.path.join(STORAGE_PATH, self.agent_name, "long_term_memory.yaml"), "w") as f:
-            yaml.dump(self.memory, f)
+    def load_from_string(self, string):
+        if not string:
+            return {}
+        return json.loads(string)
+
+    def get_as_db_string(self):
+        return json.dumps(self.memory)
 
     def load_if_exists(self):
         file_path = os.path.join(STORAGE_PATH, self.agent_name, "long_term_memory.yaml")

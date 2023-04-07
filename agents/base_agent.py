@@ -1,8 +1,5 @@
-import os.path
-
 import json5 as json
 import openai
-import yaml
 
 from agents.memory.file_long_term_memory import FileLongTermMemory
 from agents.memory.short_term_memory import BaseMemory
@@ -16,18 +13,19 @@ from util.util import create_message
 
 
 class BaseAgent:
-    def __init__(self, name, role, config, goals=[], personal_goals=[]):
+    def __init__(self, name, role, config, agent_id=None, goals=[], personal_goals=[], long_term_memory="",
+                 short_term_memory=""):
         # This holds the long term memory, agent decides what to store here
+        self.id = agent_id
         self.name = name
         self.role = role
         self.goals = goals
         self.personal_goals = personal_goals
         # TODO: Should be able to load this from a config and a factory
-        self.long_term_memory = FileLongTermMemory(self.name)
+        self.long_term_memory = FileLongTermMemory(self.name, long_term_memory)
         # This holds the current conversation
-        self.short_term_memory = BaseMemory(self.name)
+        self.short_term_memory = BaseMemory(self.name, short_term_memory)
         self.config = config
-        self.save()
 
     def wake(self):
         log(f"Agent {self.name} is waking up...")
@@ -46,7 +44,8 @@ class BaseAgent:
 
             else:
                 user_input = self.config.get('default_user_input')
-        else:
+
+        elif not user_input == self.config.get('default_user_input'):
             user_input = user_input + ", " + self.config.get('default_user_input')
 
         context, remaining_tokens = self.create_context(user_input)
@@ -66,11 +65,34 @@ class BaseAgent:
 
         return new_response_json
 
+    def think(self):
+        try:
+            response_json = self.short_term_memory.get_last_message(ASSISTANT_ROLE)
+            response = json.loads(response_json)
+        except Exception as e:
+            # This error will be shown to agent, maybe agent can react to it
+            self.add_error_command(JSON_LOADING_ERROR, e)
+            # Return error message, agent will also see this in its short term memory when it acts
+            return self.short_term_memory.get_last_message(SYSTEM_ROLE)
+
+        thoughts = response['thoughts']
+
+        self.write(thoughts)
+
+        self.speak(thoughts)
+
+        self.plan(thoughts)
+
     def act(self, response_json=None):
+        last_message = self.short_term_memory.get_last_message()
+
+        # If last message wasn't from agent, it's not agent's turn to act unless a specific command is given
+        if (not last_message or last_message['role'] != ASSISTANT_ROLE) and (not response_json):
+            return "Not agent's turn to act"
+
         if not response_json:
             # Find the last message from the assistant to act upon it
             response_json = self.short_term_memory.get_last_message(ASSISTANT_ROLE)
-
         try:
             response = json.loads(response_json)
         except Exception as e:
@@ -81,20 +103,11 @@ class BaseAgent:
         # Has name and args
         command = response['command']
 
-        thoughts = response['thoughts']
-
-        self.write(thoughts)
-
-        self.speak(thoughts)
-
-        self.plan(thoughts)
-
         try:
-            self.execute_command(command)
+            return self.execute_command(command)
         except Exception as e:
             self.add_error_command(command['name'], e)
-
-        self.save()
+            return f"Error executing command {command['name'] if command and command['name'] else 'None'}"
 
     def plan(self, thoughts):
         self.personal_goals = thoughts['plan'].split('\n')
@@ -164,6 +177,8 @@ class BaseAgent:
         if command_name == SNOWFLAKE_COMMAND:
             user_input = AppConfig().display_manager.prompt_user_input(command_result)
             self.add_human_feedback(user_input)
+
+        return command_result
 
     def execute_user_prompt_command(self, command_args, command_type):
         if command_type == 'prompt':
@@ -266,29 +281,25 @@ class BaseAgent:
     def save(self):
         if not self.config.get('save_model'):
             return
-        agent_path = os.path.join(AGENTS_DIR, self.name)
-        # create new dir if not exists
-        if not os.path.exists(AGENTS_DIR):
-            os.makedirs(AGENTS_DIR)
 
-        if not os.path.exists(agent_path):
-            os.makedirs(agent_path)
-
-        self.long_term_memory.save()
-
-        with open(os.path.join(agent_path, 'config.yaml'), 'w') as outfile:
-            yaml_content = {
-                "name": self.name,
-                "role": self.role,
-                "model": self.config.get('model'),
-                "config": self.config.to_dict(),
-                "goals": self.goals,
-                "personal_goals": self.personal_goals
-            }
-            yaml.dump(yaml_content, outfile, default_flow_style=False)
+        AppConfig().save(self)
 
     def display(self):
         if not AppConfig().display_manager:
             return
 
         AppConfig().display_manager.print_agent_goals(self.goals, self.personal_goals)
+
+    @staticmethod
+    def load_from_dict(data):
+        from agents.config import AgentConfig
+        name = data.get('name')
+        role = data.get('role')
+        goals = data.get('goals')
+        long_term_memory = data.get('long_term_memory')
+        short_term_memory = data.get('short_term_memory')
+        config = AgentConfig.from_dict(data.get('config'))
+
+        # TODO support other types,or now just BaseAgent
+        return BaseAgent(name, role, config, goals=goals, personal_goals=[], long_term_memory=long_term_memory,
+                         short_term_memory=short_term_memory)

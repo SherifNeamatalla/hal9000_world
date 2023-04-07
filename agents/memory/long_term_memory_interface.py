@@ -21,11 +21,3 @@ class ILongTermMemory(ABC):
     @abstractmethod
     def clear(self):
         pass
-
-    @abstractmethod
-    def save(self):
-        pass
-
-    @abstractmethod
-    def load_if_exists(self):
-        pass

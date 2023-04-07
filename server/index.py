@@ -23,19 +23,23 @@ async def create_agent(name: str, role: str, goals: list, config: dict):
     return do_create_agent(name, role, goals, config)
 
 
-@app.get("/agent/load")
-async def load_agent(name: str):
-    return do_load_agent(name)
+@app.get("/agent/load/{agent_id}")
+async def load_agent(agent_id: str):
+    return do_load_agent(agent_id)
 
 
-@app.post("/agent/chat")
-async def chat(name: str, message: str = Body(...)):
-    return do_chat(name, message)
+@app.post("/agent/chat/{agent_id}")
+async def chat(agent_id: str, message: str = Body(...)):
+    return do_chat(agent_id, message)
 
+# Does chat & act
+@app.post("/agent/loop/{agent_id}")
+async def chat(agent_id: str, message: str = Body(...)):
+    return do_loop(agent_id, message)
 
-@app.post("/agent/act")
-async def act(name: str):
-    return do_act(name)
+@app.post("/agent/act/{agent_id}")
+async def act(agent_id: str, command: dict = Body(...)):
+    return do_act(agent_id, command)
 
 
 @app.post("/agent/wake")

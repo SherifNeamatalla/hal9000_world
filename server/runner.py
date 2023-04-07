@@ -1,36 +1,62 @@
 # Define the endpoint for your service
+import json
+
 from fastapi import HTTPException
 
-from database.sqlite3_repo import db_get_agent, db_add_agent
+from config.app_config import AppConfig
+from util.agents_util import load_agent_by_id
 
 
 def do_create_agent(name: str, role, goals, config: dict):
-    from agents.base_agent import BaseAgent
+    agent_id = AppConfig().db_manager.add(name, role, goals, config)
 
-    agent = BaseAgent(name, role, config, goals);
-
-    return db_add_agent()
+    return map_agent(get_agent(agent_id))
 
 
-def do_load_agent(id: str):
-    return get_agent(name)
+def do_load_agent(agent_id: str):
+    return map_agent(get_agent(agent_id))
 
 
-def do_chat(id: str, message: str):
-    return get_agent(name).chat(message)
+def do_chat(agent_id: str, message: str):
+    agent = get_agent(agent_id)
+    agent.chat(message)
+    return map_agent(agent)
 
 
-def do_act(id: str):
-    return get_agent(name).act()
+def do_act(agent_id: str, command: dict):
+    agent = get_agent(agent_id)
+    agent.think(command)
+    return map_agent(agent)
 
 
-def do_wake(id: str):
-    return get_agent(name).wake()
+def do_loop(agent_id: str, message: str):
+    agent = get_agent(agent_id)
+    agent.chat(message)
+    agent.think()
+    agent.act()
+    return map_agent(agent)
 
 
-def get_agent(id: str):
-    agent = db_get_agent(agent_name=name)
+def do_wake(agent_id: str):
+    agent = get_agent(agent_id)
+    agent.wake()
+    return map_agent(agent)
+
+
+def get_agent(agent_id: str):
+    agent = load_agent_by_id(agent_id)
 
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
     return agent
+
+
+def map_agent(agent):
+    return {
+        'id': agent.id,
+        'name': agent.name,
+        'role': agent.role,
+        'config': agent.config.to_dict(),
+        'goals': agent.goals,
+        'short_term_memory': agent.short_term_memory,
+    }

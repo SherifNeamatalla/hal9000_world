@@ -10,7 +10,7 @@ from config.constants import DEFAULT_START_PROMPT_PATH, INITIAL_USER_INPUT, PRES
 class AgentConfig:
     # consturctor
     def __init__(self, commands_set_path=None,
-                 model='gpt-3.5-turbo', max_tokens=4096,
+                 model='gpt-3.5-turbo', max_tokens=4000,
                  temperature=0.1, top_p=1, frequency_penalty=0, presence_penalty=0,
                  include_constraints_resources_prompt=True, include_response_format_prompt=True,
                  include_commands_set=True, save_model=True, autonomous=False, type=BASE_AGENT_TYPE,
@@ -44,6 +44,9 @@ class AgentConfig:
         return self.config_map[key]
 
     def to_dict(self):
+        return self.config_map
+
+    def __dict__(self):
         return self.config_map
 
     @staticmethod

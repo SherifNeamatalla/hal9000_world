@@ -8,7 +8,7 @@ from config.constants import SUB_AGENT_TYPE, SUB_AGENT_COMMANDS_SET, DEFAULT_USE
 class SubAgent(BaseAgent):
     def __init__(self, name, role, prompt, save_model=False):
         config = AgentConfig(save_model=save_model, autonomous=True,
-                             max_tokens=4096,
+                             max_tokens=4000,
                              type=SUB_AGENT_TYPE,
                              include_constraints_resources_prompt=False,
                              include_response_format_prompt=False,

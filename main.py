@@ -4,10 +4,6 @@ from runners.auto_gpt_runner import AutoGptRunner
 load_env()
 
 
-def get_user_input():
-    return input("User Input: ")
-
-
 def main():
     runner = AutoGptRunner()
     runner.run()

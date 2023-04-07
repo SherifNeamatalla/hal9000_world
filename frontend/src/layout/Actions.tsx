@@ -8,8 +8,17 @@ const ActionsContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  height: '100%',
+  flexDirection: 'row',
+  width: '100%',
   backgroundColor: theme.palette.background.paper,
+}));
+const TextAreaContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexDirection: 'row',
+  backgroundColor: theme.palette.background.paper,
+  width: '100%',
 }));
 
 const TextArea = styled(TextField)(({ theme }) => ({
@@ -39,16 +48,18 @@ const Actions: React.FC<Props> = ({ onActionClick }) => {
 
   return (
     <ActionsContainer>
-      <TextArea
-        InputProps={{
-          endAdornment: <InputAdornment
-            style={{ cursor: 'pointer' }}
-            onClick={() => handleActionClick('send')}
-            position='end'><SendIcon
-            style={{ transform: 'rotate(-45deg)' }}
-          /></InputAdornment>,
-        }}
-        placeholder='Type your message...' />
+      <TextAreaContainer>
+        <TextArea
+          InputProps={{
+            endAdornment: <InputAdornment
+              style={{ cursor: 'pointer' }}
+              onClick={() => handleActionClick('send')}
+              position='end'><SendIcon
+              style={{ transform: 'rotate(-45deg)' }}
+            /></InputAdornment>,
+          }}
+          placeholder='Type your message...' />
+      </TextAreaContainer>
     </ActionsContainer>
   );
 };

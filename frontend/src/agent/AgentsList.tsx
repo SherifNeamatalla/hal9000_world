@@ -50,11 +50,12 @@ const ListItemButtonContainer = styled(ListItemButton)(({ theme, selected }) => 
 }));
 
 const ListItemIconContainer = styled(ListItemIcon)(({ theme }) => ({
-  color: theme.palette.primary.contrastText,
+  color: theme.palette.customColors.brightGreen2,
 }));
 
 const ListItemTextContainer = styled(ListItemText)(({ theme }) => ({
   fontWeight: 'bold',
+  color: theme.palette.customColors.brightGreen2,
 }));
 
 function AgentsList({ selectedAgent, setSelectedAgent }: any) {

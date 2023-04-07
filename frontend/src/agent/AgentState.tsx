@@ -9,9 +9,10 @@ interface AgentStateProps {
 
 const AgentStateContainer = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.agentState.background,
-  color: theme.palette.customColors.brightBlueGreen,
+  color: theme.palette.customColors.brightGreen2,
   padding: theme.spacing(2),
   height: '100%',
+  borderRadius: '10px',
 }));
 
 const CommandTextField = styled(TextField)(({ theme }) => ({

@@ -12,12 +12,12 @@ const darkTheme = {
     agentsList: {
       main: '#00AEEF',
       contrastText: '#33FF33',
-      background: '#333333',
+      background: '#202123',
     },
     agentState: {
       main: '#00AEEF',
       contrastText: '#33FF33',
-      background: '#1a1a1a',
+      background: '#202123',
     },
     matrix: {
       contrastText: '#33FF33',

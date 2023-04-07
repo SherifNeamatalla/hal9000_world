@@ -5,6 +5,7 @@ import AgentsList from '../agent/AgentsList';
 import ChatWindow from '../chat/ChatWindow';
 import AgentState from '../agent/AgentState';
 import Actions from './Actions';
+import { Stack } from '@mui/material';
 // @ts-ignore
 // @ts-ignore
 const useStyles = makeStyles((theme) => {
@@ -22,6 +23,7 @@ const useStyles = makeStyles((theme) => {
     },
     mainContent: {
       padding: theme.spacing(2),
+      height: '85%',
     },
     actions: {
       height: '15%',
@@ -50,16 +52,22 @@ const MainLayout: React.FC<Props> = ({ selectedAgent, setSelectedAgent, agentSta
   }
 
   return (
-    <Grid container className={classes.root}>
+    <Stack direction={'row'} className={classes.root}>
       {/* Left Part */}
       <Grid item xs={12} md={2} className={classes.sidebar}>
         <AgentsList selectedAgent={selectedAgent} setSelectedAgent={setSelectedAgent} />
       </Grid>
 
-      {/* Main Content */}
-      <Grid item xs={12} md={7} className={classes.mainContent}>
-        <ChatWindow agentState={agentState} sendMessage={sendMessage} />
+      <Grid item xs={12} md={7} >
+        <Grid className={classes.mainContent}>
+          <ChatWindow agentState={agentState} sendMessage={sendMessage} />
+        </Grid>
+        <Grid item  className={classes.actions}>
+          <Actions onActionClick={onActionClick} />
+        </Grid>
       </Grid>
+      {/* Main Content */}
+
 
       {/* Right Part */}
       <Grid item xs={12} md={3} className={classes.agentState}>
@@ -67,10 +75,8 @@ const MainLayout: React.FC<Props> = ({ selectedAgent, setSelectedAgent, agentSta
       </Grid>
 
       {/* Bottom Chat Window */}
-      <Grid item xs={12} className={classes.actions}>
-        <Actions onActionClick={onActionClick} />
-      </Grid>
-    </Grid>
+
+    </Stack>
   );
 };
 

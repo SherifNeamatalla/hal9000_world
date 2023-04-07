@@ -1,8 +1,6 @@
 from agents.base_agent import BASE_COMMANDS_SET_NAME, BaseAgent
 from agents.config import AgentConfig
 from config.app_config import AppConfig
-from database.sqlite3_db_manager import SQLite3DBManager
-from display.cmd_line_display import CmdLineDisplay
 from display.spinner import Spinner
 from runners.runner_interface import IRunner
 from util.agents_util import load_agent_by_id
@@ -11,20 +9,10 @@ from util.commands_util import ask_user_command_permission
 
 class AutoGptRunner(IRunner):
     def run(self):
-        AppConfig(
-            display_manager=CmdLineDisplay(),
-            voice_manager=None,
-            db_manager=SQLite3DBManager(),
-            save_format='yaml'
-        )
-
         agent = self.load_agent()
 
-        with Spinner("Waking up... "):
-            agent.wake()
-
         AppConfig().display_manager.print_hello_world(agent.name)
-        agent.think()
+
         while True:
             with Spinner("Thinking... "):
                 agent.chat()

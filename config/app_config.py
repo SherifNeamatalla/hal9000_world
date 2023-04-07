@@ -18,12 +18,7 @@ class AppConfig:
             cls.db_manager = db_manager
             cls.save_format = save_format
             cls._instance = super().__new__(cls)
-            cls._instance.load_config()
         return cls._instance
-
-    def load_config(self):
-        # Load configuration from file or environment variables
-        pass
 
     def app_voice_manager(self):
         return self.voice_manager

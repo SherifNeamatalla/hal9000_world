@@ -1,13 +1,20 @@
-import json
-
 from fastapi import FastAPI, Body
+from starlette.middleware.cors import CORSMiddleware
 
-from commands.cmd_interface import ICmd
-from config.app_config import AppConfig
 from config.env_loader import load_env
-from runner import do_load_agent, do_wake, do_act, do_chat, do_create_agent
+from runner import do_load_agent, do_act, do_chat, do_create_agent, do_list_agents
+from util.config_util import init_app_config
 
 app = FastAPI()
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 load_env()
 
@@ -15,6 +22,11 @@ load_env()
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.get("/agent/list")
+async def list_agents():
+    return do_list_agents()
 
 
 # Define the endpoint for your service
@@ -32,24 +44,15 @@ async def load_agent(agent_id: str):
 async def chat(agent_id: str, message: str = Body(...)):
     return do_chat(agent_id, message)
 
-# Does chat & act
-@app.post("/agent/loop/{agent_id}")
-async def chat(agent_id: str, message: str = Body(...)):
-    return do_loop(agent_id, message)
 
 @app.post("/agent/act/{agent_id}")
 async def act(agent_id: str, command: dict = Body(...)):
     return do_act(agent_id, command)
 
 
-@app.post("/agent/wake")
-async def wake(name: str):
-    return do_wake(name)
-
-
 if __name__ == "__main__":
     import uvicorn
 
-    AppConfig()
+    init_app_config()
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

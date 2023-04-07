@@ -3,7 +3,13 @@
 from fastapi import HTTPException
 
 from config.app_config import AppConfig
+from server.server_agent_runner import ServerAgentRunner
 from util.agents_util import load_agent_by_id
+
+
+def do_list_agents():
+    agents = AppConfig().db_manager.list()
+    return [map_agent_from_dict(agent) for agent in agents]
 
 
 def do_create_agent(name: str, role, goals, config: dict):
@@ -18,28 +24,18 @@ def do_load_agent(agent_id: str):
 
 def do_chat(agent_id: str, message: str):
     agent = get_agent(agent_id)
-    agent.chat(message)
-    return map_agent(agent)
+
+    runner = ServerAgentRunner(agent, user_response=message)
+
+    return map_agent(runner.run())
 
 
-def do_act(agent_id: str, command: dict):
+def do_act(agent_id: str, command_response: str, command: dict):
     agent = get_agent(agent_id)
-    agent.think(command)
-    return map_agent(agent)
 
+    runner = ServerAgentRunner(agent, command=command, user_response=command_response)
 
-def do_loop(agent_id: str, message: str):
-    agent = get_agent(agent_id)
-    agent.chat(message)
-    agent.think()
-    agent.act()
-    return map_agent(agent)
-
-
-def do_wake(agent_id: str):
-    agent = get_agent(agent_id)
-    agent.wake()
-    return map_agent(agent)
+    return map_agent(runner.run())
 
 
 def get_agent(agent_id: str):
@@ -50,12 +46,22 @@ def get_agent(agent_id: str):
     return agent
 
 
+def map_agent_from_dict(agent):
+    return {
+        'id': agent['id'],
+        'name': agent['name'],
+        'role': agent['role'],
+        'config': agent['config'],
+        'goals': agent['goals'],
+        'chatHistory': agent['short_term_memory'],
+    }
 def map_agent(agent):
+
     return {
         'id': agent.id,
         'name': agent.name,
         'role': agent.role,
         'config': agent.config.to_dict(),
         'goals': agent.goals,
-        'short_term_memory': agent.short_term_memory,
+        'chatHistory': agent.short_term_memory.get_as_string(),
     }

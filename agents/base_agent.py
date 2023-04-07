@@ -73,7 +73,7 @@ class BaseAgent:
             # This error will be shown to agent, maybe agent can react to it
             self.add_error_command(JSON_LOADING_ERROR, e)
             # Return error message, agent will also see this in its short term memory when it acts
-            return self.short_term_memory.get_last_message(SYSTEM_ROLE)
+            return None
 
         thoughts = response['thoughts']
 
@@ -86,14 +86,15 @@ class BaseAgent:
         return response['command']
 
     def act(self, command, user_input):
-        if user_input == WRONG_COMMAND:
-            self.add_error_command(command['name'], WRONG_COMMAND)
+        command_name = command['name'] if command and command['name'] else None
 
-        # Action denied from user
-        if user_input == PERMISSION_DENIED:
-            self.add_human_feedback(PERMISSION_DENIED)
-            return PERMISSION_DENIED
-        command_name = command['name']
+        if user_input == WRONG_COMMAND:
+            self.add_error_command(command_name, WRONG_COMMAND)
+
+        # Action denied from user or not accepted, meaning human feedback
+        if user_input == PERMISSION_DENIED or not user_input == PERMISSION_GRANTED:
+            self.add_human_feedback(user_input)
+            return user_input
 
         # Memory is handled by agent itself and not by the command executor
         if command_name == MEMORY_COMMAND:
@@ -141,25 +142,6 @@ class BaseAgent:
         self.add_command_result(command_name, command_result)
 
         return command_result
-
-    def execute_user_prompt_command(self, command_args, command_type):
-        if command_type == 'prompt':
-            user_input = AppConfig().display_manager.prompt_user_input(command_args['prompt'])
-            self.add_human_feedback(user_input)
-
-    def ask_for_permission(self, command):
-        if not self.config.get('autonomous'):
-            command_name, user_input = AppConfig().display_manager.ask_permission(self.name, command)
-
-            if user_input == 'n':
-                self.add_human_feedback(PERMISSION_DENIED)
-                return False
-
-            if command_name == "human_feedback":
-                self.add_human_feedback(user_input)
-                return False
-
-        return True
 
     def execute_memory_command(self, command_args, command_type):
         AppConfig().display_manager.print_executing_command(MEMORY_COMMAND, command_args, command_type)

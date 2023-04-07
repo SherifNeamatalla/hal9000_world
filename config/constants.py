@@ -27,7 +27,8 @@ SUB_AGENT_ROLE_PREFIX = "You are an agent whose sole task is to "
 ####Response Errors####
 PERMISSION_DENIED = "Action denied"
 PERMISSION_GRANTED = "Permission granted"
-WRONG_COMMAND = "The command is not quite right, check the format in the commands specified above."
+WRONG_COMMAND = "The command is not quite right, check the format in the commands specified above, the format has to " \
+                "match it exactly don't be verbose."
 JSON_LOADING_ERROR = "parsing failed, please stick to the format specified above by the system."
 
 ####Agent Types####

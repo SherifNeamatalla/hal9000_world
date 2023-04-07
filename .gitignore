@@ -4,3 +4,6 @@ storage/agents/*
 storage/generated/*
 venv
 **/__pycache__/
+/frontend/node_modules
+/frontend/.idea
+/frontend/.env

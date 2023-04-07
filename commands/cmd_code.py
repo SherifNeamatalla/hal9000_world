@@ -92,18 +92,7 @@ def execute_python_file(file):
         # You can replace 'python:3.8' with the desired Python image/version
         # You can find available Python images on Docker Hub:
         # https://hub.docker.com/_/python
-        container = client.containers.run(
-            'python:3.10',
-            f'python {file}',
-            volumes={
-                os.path.abspath(workspace_folder): {
-                    'bind': '/workspace',
-                    'mode': 'ro'}},
-            working_dir='/workspace',
-            stderr=True,
-            stdout=True,
-            detach=True,
-        )
+        container = client.containers.run('python:3.10')
 
         output = container.wait()
         logs = container.logs().decode('utf-8')

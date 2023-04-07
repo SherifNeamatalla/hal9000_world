@@ -1,0 +1,30 @@
+.hal_9000 {
+
+  color: inherit;
+}
+
+.hal_9000::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: red;
+  opacity: 1;
+  animation: pulse 2s ease-in-out infinite; /* Add animation property to always animate */
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

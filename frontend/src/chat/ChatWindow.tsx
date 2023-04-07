@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@mui/system';
 import { List, ListItem, ListSubheader, Stack } from '@mui/material';
 import { ListItemText } from '@material-ui/core';
+import './ChatWindow.css';
 
 interface Props {
   agentState: any;
@@ -21,33 +22,6 @@ const ChatWindowContainer = styled('div')(({ theme }) => ({
 }));
 
 
-const Hal9000 = styled('div')(({ theme }) => ({
-  backgroundColor: theme.palette.matrix.main,
-  height: '100%',
-  overflowY: 'auto',
-  padding: theme.spacing(2),
-  display: 'flex',
-  flexDirection: 'column',
-  borderRadius: '10px',
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%) scale(0)',
-    width: '200px',
-    height: '200px',
-    borderRadius: '50%',
-    backgroundColor: 'red',
-    opacity: '1',
-    transition: 'transform 1s ease-in-out',
-  },
-  '&:hover::before':
-    {
-      transform: 'translate(-50%, -50%) scale(1)',
-    },
-}));
 const MatrixText = styled('div')(({ theme }) => ({
   color: theme.palette.customColors.brightGreen,
   fontFamily: 'Roboto Mono',
@@ -106,7 +80,7 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage }) => {
   const [reasoning, setReasoning] = useState<string>('');
   const [plan, setPlan] = useState<string>('');
 
-  const [showHal, setShowHal] = useState<boolean>(true);
+  const [showHal, setShowHal] = useState<boolean>(false);
   useEffect(() => {
     if (agentState.response) {
       setMessages((prevMessages) => [
@@ -231,13 +205,8 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage }) => {
       <div ref={messagesEndRef} />
     </>);
 
-    if (showHal) {
-      return (<Hal9000>
-        {content}
-      </Hal9000>);
-    }
 
-    return <ChatWindowContainer>{content}</ChatWindowContainer>;
+    return <ChatWindowContainer className={showHal ? 'hal_9000' : ''}>{content}</ChatWindowContainer>;
 
   }
 

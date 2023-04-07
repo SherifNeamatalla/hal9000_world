@@ -1,0 +1,20 @@
+config:
+  autonomous: true
+  commands_set_path: null
+  default_user_input: 'Perform the task at hand'
+  frequency_penalty: 0
+  include_commands_set: false
+  include_constraints_resources_prompt: false
+  include_response_format_prompt: false
+  max_personal_goals: 5
+  max_tokens: 4000
+  model: gpt-3.5-turbo
+  presence_penalty: 0
+  prompt_start_path: default_start_prompt.txt
+  save_model: false
+  temperature: 0.1
+  top_p: 1
+  type: SingleUseAgent
+model: gpt-3.5-turbo
+name: Browser Agent
+role: Web Browser agent for finding and summarizing information

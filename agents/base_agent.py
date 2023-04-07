@@ -1,36 +1,18 @@
-import json5 as json
 import os.path
-from pathlib import Path
 
+import json5 as json
 import openai
 import yaml
 
 from agents.memory.file_long_term_memory import FileLongTermMemory
 from agents.memory.short_term_memory import BaseMemory
 from commands.commands_executor import execute_cmd
+from config.constants import *
 from display.cmd_line_display import CmdLineDisplay
-from logger.logger import log, debug
+from logger.logger import log
 from prompts.prompt_loader import load_commands_set, load_prompt
-from util import token_counter
-
-CONSTRAINTS_RESOURCES_PROMPT_NAME = "constraints_resources_prompt.txt"
-RESPONSE_FORMAT_PROMPT_NAME = "response_format_prompt.txt"
-BASE_COMMANDS_SET_NAME = "base_commands_set.txt"
-
-USER_ROLE = "user"
-SYSTEM_ROLE = "system"
-ASSISTANT_ROLE = "assistant"
-
-MODELS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "agents")
-
-ACTION_DENIED = "Action denied"
-
-BASE_AGENT_TYPE = "BaseAgent"
-JSON_LOADING_ERROR = "Loading response JSON"
-
-MEMORY_COMMAND = "memory"
-USER_COMMAND = "user"
-SNOWFLAKE_COMMAND = "snowflake"
+from util.token_counter import create_short_term_memory_context
+from util.util import create_message
 
 
 class BaseAgent:
@@ -71,8 +53,6 @@ class BaseAgent:
 
         context, remaining_tokens = self.create_context(user_input)
 
-        debug(f"Agent {self.name} is chatting with user input: {user_input}")
-
         response = openai.ChatCompletion.create(
             model=self.config.get('model'),
             messages=context,
@@ -82,11 +62,9 @@ class BaseAgent:
 
         new_response_json = response.choices[0].message["content"]
 
-        debug(f"Agent {self.name} got response: {new_response_json}")
-
         # Update short term memory
-        self.short_term_memory.add(self.create_message(USER_ROLE, user_input))
-        self.short_term_memory.add(self.create_message(ASSISTANT_ROLE, new_response_json))
+        self.short_term_memory.add(create_message(USER_ROLE, user_input))
+        self.short_term_memory.add(create_message(ASSISTANT_ROLE, new_response_json))
 
         return new_response_json
 
@@ -97,6 +75,7 @@ class BaseAgent:
         try:
             response = json.loads(response_json)
         except Exception as e:
+            # This error will be shown to agent, maybe agent can react to it
             self.add_error_command(JSON_LOADING_ERROR, e)
             return
 
@@ -104,8 +83,6 @@ class BaseAgent:
         command = response['command']
 
         thoughts = response['thoughts']
-
-        debug(f"Agent {self.name} is acting on command: {command} and thoughts: {thoughts}")
 
         self.write(thoughts)
 
@@ -118,8 +95,6 @@ class BaseAgent:
         except Exception as e:
             self.add_error_command(command['name'], e)
 
-        # TODO use reasoning, plan, criticism
-
         self.save()
 
     def plan(self, thoughts):
@@ -129,6 +104,22 @@ class BaseAgent:
             self.personal_goals = self.personal_goals[:self.config.get('max_personal_goals')]
 
         self.display_manager.print_agent_goals(self.goals, self.personal_goals)
+
+    def write(self, thoughts):
+        if not self.display_manager:
+            return
+
+        self.display_manager.print_agent_thoughts(thoughts['text'])
+
+        self.display_manager.print_agent_criticism(thoughts['criticism'])
+
+        self.display_manager.print_agent_reasoning(thoughts['reasoning'])
+
+    def speak(self, thoughts):
+        if not self.voice_manager:
+            return
+
+        self.voice_manager.speak(thoughts['speak'])
 
     def execute_command(self, command):
         if not command or not command['name']:
@@ -207,26 +198,10 @@ class BaseAgent:
 
         self.display_manager.print_command_result(MEMORY_COMMAND, command_result)
 
-    def write(self, thoughts):
-        if not self.display_manager:
-            return
-
-        self.display_manager.print_agent_thoughts(thoughts['text'])
-
-        self.display_manager.print_agent_criticism(thoughts['criticism'])
-
-        self.display_manager.print_agent_reasoning(thoughts['reasoning'])
-
-    def speak(self, thoughts):
-        if not self.voice_manager:
-            return
-
-        self.voice_manager.speak(thoughts['speak'])
-
     def add_error_command(self, command_name, error):
         command_memory_entry = f"Command {command_name} failed, error:{str(error)}"
 
-        self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry))
+        self.short_term_memory.add(create_message(SYSTEM_ROLE, command_memory_entry))
 
         self.display_manager.print_error(command_memory_entry)
 
@@ -237,16 +212,18 @@ class BaseAgent:
             command_memory_entry = f"Command {command_name} returned: {command_result}, save important information in " \
                                    f"memory!"
 
-        self.short_term_memory.add(self.create_message(SYSTEM_ROLE, command_memory_entry))
+        self.short_term_memory.add(create_message(SYSTEM_ROLE, command_memory_entry))
 
     def add_human_feedback(self, user_input):
         result = f"Human feedback: {user_input}"
-        self.short_term_memory.add(self.create_message(USER_ROLE, result))
+        self.short_term_memory.add(create_message(USER_ROLE, result))
 
     def create_context(self, user_input):
         context = self.create_long_term_memory_context()
 
-        short_term_result = self.create_short_term_memory_context(context, user_input)
+        short_term_result = create_short_term_memory_context(self.config.get('model'),
+                                                             self.config.get('max_tokens'), context, user_input,
+                                                             self.short_term_memory.get())
 
         context = short_term_result[0]
         remaining_tokens = short_term_result[1]
@@ -261,52 +238,10 @@ class BaseAgent:
             self.personal_goals) > 0 else ''
 
         message = self.hello_world(self.config.get('commands_set_path'), user_goals_str=user_goals,
-                                   personal_goals_str=personal_goals)
+                                   personal_goals_str="")
 
-        return [self.create_message(SYSTEM_ROLE, message),
-                self.create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string())]
-
-    def create_short_term_memory_context(self, context, user_input):
-        # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the
-        # right length of the short term memory, shouldn't exceed self.config.get('max_tokens')
-
-        # Add the user input
-        full_message_history = self.short_term_memory.get()
-        model = self.config.get('model')
-        token_limit = self.config.get('max_tokens') - token_counter.count_message_tokens(context, model)
-        send_token_limit = token_limit - 1000
-        next_message_to_add_index = len(full_message_history) - 1
-        current_tokens_used = 0
-        insertion_index = len(context)
-
-        # Count the currently used tokens
-        current_tokens_used = token_counter.count_message_tokens(context, model)
-        current_tokens_used += token_counter.count_message_tokens([self.create_message(USER_ROLE, user_input)],
-                                                                  model)  # Account for user input (appended later)
-
-        while next_message_to_add_index >= 0:
-            # print (f"CURRENT TOKENS USED: {current_tokens_used}")
-            message_to_add = full_message_history[next_message_to_add_index]
-
-            tokens_to_add = token_counter.count_message_tokens([message_to_add], model)
-            if current_tokens_used + tokens_to_add > send_token_limit:
-                break
-
-            # Add the most recent message to the start of the current context, after the two system prompts.
-            context.insert(insertion_index, full_message_history[next_message_to_add_index])
-
-            # Count the currently used tokens
-            current_tokens_used += tokens_to_add
-
-            # Move to the next most recent message in the full message history
-            next_message_to_add_index -= 1
-
-        # Append user input, the length of this is accounted for above
-        context.extend([self.create_message(USER_ROLE, user_input)])
-
-        tokens_remaining = token_limit - current_tokens_used
-
-        return context, tokens_remaining
+        return [create_message(SYSTEM_ROLE, message),
+                create_message(SYSTEM_ROLE, self.long_term_memory.get_as_string())]
 
     def hello_world(self, commands_set_path, user_goals_str, personal_goals_str):
         prompt_start = load_prompt(self.config.get('prompt_start_path'))
@@ -332,10 +267,10 @@ class BaseAgent:
     def save(self):
         if not self.config.get('save_model'):
             return
-        agent_path = os.path.join(MODELS_DIR, self.name)
+        agent_path = os.path.join(AGENTS_DIR, self.name)
         # create new dir if not exists
-        if not os.path.exists(MODELS_DIR):
-            os.makedirs(MODELS_DIR)
+        if not os.path.exists(AGENTS_DIR):
+            os.makedirs(AGENTS_DIR)
 
         if not os.path.exists(agent_path):
             os.makedirs(agent_path)
@@ -352,10 +287,3 @@ class BaseAgent:
                 "personal_goals": self.personal_goals
             }
             yaml.dump(yaml_content, outfile, default_flow_style=False)
-
-    @staticmethod
-    def create_message(role, content):
-        return {
-            "role": role,
-            "content": content
-        }

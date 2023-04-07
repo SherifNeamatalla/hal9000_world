@@ -9,8 +9,7 @@ class CmdAgents(ICmd):
 
     def execute(self, cmd_args, cmd_type='search'):
         if cmd_type == 'create':
-            return start_agent(cmd_args['name'], cmd_args['task'], cmd_args['prompt'],
-                               cmd_args['save_for_later_use'])
+            return start_agent(cmd_args['name'], cmd_args['task'],cmd_args['save_for_later_use'])
 
         if cmd_type == 'get':
             agents = list_agents()
@@ -27,15 +26,15 @@ class CmdAgents(ICmd):
             return delete_agent(cmd_args['name'])
 
         if cmd_type == 'message':
-            return message_agent(cmd_args['name'], cmd_args['message'], cmd_args['input'])
+            return message_agent(cmd_args['name'], cmd_args['message'], cmd_args.get('input', None))
 
         pass
 
 
-def start_agent(name, task, prompt, save_for_later_use=False):
-    from agents.single_use_agent import SingleUserAgent
+def start_agent(name, task, save_for_later_use=False):
+    from agents.sub_agent import SubAgent
 
-    agent = SingleUserAgent(name, task, prompt, save_for_later_use)
+    agent = SubAgent(name, task, None, save_for_later_use)
 
     return agent.wake()
 
@@ -48,19 +47,20 @@ def delete_agent(name):
     return delete_agent_data(name)
 
 
-def message_agent(name, message, input):
-    user_input = message + '. Input: ' + input
+def message_agent(name, message, input=None):
+    if input:
+        message = message + '. Input: ' + input
     agent = load_agent(name)
-    return agent.chat(user_input)
+    return agent.chat(message)
 
 
 def load_agents():
-    from agents.single_use_agent import SINGLE_USE_AGENT_TYPE
+    from agents.sub_agent import SUB_AGENT_TYPE
     agents = get_saved_agents()
     result = []
 
     for agent in agents:
-        if not agent['type'] == SINGLE_USE_AGENT_TYPE:
+        if not agent['type'] == SUB_AGENT_TYPE:
             continue
         result.append(agent)
 

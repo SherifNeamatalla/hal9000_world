@@ -2,30 +2,19 @@ import openai
 
 from agents.base_agent import BaseAgent
 from agents.config import AgentConfig
-from prompts.prompt_loader import load_commands_set
-
-SINGLE_USE_AGENT_TYPE = "SingleUseAgent"
-DEFAULT_USER_INPUT = 'Start working on the task on hand'
-
-SINGLE_USE_COMMANDS_SET = 'single_use_commands_set.txt'
+from util.token_counter import truncate_messages, count_message_tokens
 
 
-class SingleUserAgent(BaseAgent):
-    def __init__(self, name, role, prompt, save_model=False):
-        config = AgentConfig(save_model=save_model, autonomous=True,
-                             max_tokens=4000,
-                             type=SINGLE_USE_AGENT_TYPE,
-                             commands_set_path=SINGLE_USE_COMMANDS_SET,
-                             default_user_input=DEFAULT_USER_INPUT)  # You can play with this value to get better results
-        super().__init__(name=name, role=role,
-                         config=config)
-        # TODO test how gpt generates its prompt and change this accordingly
-        # self.hello_world = self.hello_world + '\n' + prompt
-        self.hello_world = self.hello_world
+class SingleUseAgent(BaseAgent):
+    def __init__(self, name, role, config):
+        super().__init__(name=name, role=role, config=config)
 
     def chat(self, user_input):
-        context, remaining_tokens = self.create_context(user_input)
-
+        if isinstance(user_input, list):
+            context = truncate_messages(user_input, self.config.get('max_tokens'), self.config.get('model'))
+            remaining_tokens = self.config.get('max_tokens') - count_message_tokens(context, self.config.get('model'))
+        else:
+            context, remaining_tokens = self.create_context(user_input)
         response = openai.ChatCompletion.create(
             model=self.config.get('model'),
             messages=context,

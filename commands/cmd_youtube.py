@@ -3,12 +3,11 @@ import os
 
 import requests
 from dotenv import load_dotenv
-from google.auth.transport.requests import Request
 from google.oauth2 import service_account
-from googleapiclient.discovery import build
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from commands.cmd_interface import ICmd
+from config.constants import YOUTUBE_AGENT_PRESET_NAME
 
 load_dotenv()
 
@@ -44,54 +43,11 @@ class CmdYoutube(ICmd):
         video_data['channel'] = data['items'][0]['snippet']['channelTitle']
         return video_data
 
-    # def get_video_script(self, url):
-    #     # Extract the video ID from the URL
-    #     video_id = url.split('v=')[1]
-    #
-    #     if not video_id:
-    #         return 'Invalid YouTube video URL.'
-    #
-    #     # Authenticate with the YouTube Data API
-    #
-    #     credentials = self.get_credentials()
-    #     # if not credentials or not credentials.valid:
-    #     #     if credentials and credentials.expired and credentials.refresh_token:
-    #     #         credentials.refresh(Request())
-    #     #     else:
-    #     #         return 'Unable to authenticate with the YouTube Data API.'
-    #
-    #     youtube = build('youtube', 'v3', credentials=credentials)
-    #
-    #     # Retrieve the captions for the video
-    #     caption_request = youtube.captions().list(
-    #         part='snippet',
-    #         videoId=video_id
-    #     )
-    #
-    #     caption_response = caption_request.execute()
-    #
-    #     # Get the first caption track
-    #     if not caption_response.get('items'):
-    #         return 'No captions available for this video.'
-    #
-    #     caption_track = caption_response['items'][0]
-    #     caption_id = caption_track['id']
-    #
-    #     # Download the caption
-    #     caption_download_request = youtube.captions().download(
-    #         id=caption_id
-    #     )
-    #
-    #     caption_download_response = caption_download_request.execute()
-    #     caption_content = caption_download_response.decode('utf-8')
-    #
-    #     return caption_content
-
     def get_video_script(self, url):
-        from agents.browser_agent import BrowserAgent
+        from agents.config import AgentConfig
         video_id = url.split('v=')[1]
 
-        browser_agent = BrowserAgent()
+        browser_agent = AgentConfig.from_preset(YOUTUBE_AGENT_PRESET_NAME)
 
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
@@ -99,7 +55,7 @@ class CmdYoutube(ICmd):
 
         transcript = '\n'.join([item['text'] for item in transcript])
 
-        messages = [self.create_message(transcript)]
+        messages = [create_message(transcript)]
 
         return browser_agent.chat(messages)
 
@@ -108,8 +64,9 @@ class CmdYoutube(ICmd):
             self.SERVICE_ACCOUNT_FILE,
             scopes=['https://www.googleapis.com/auth/youtube.force-ssl'])
 
-    def create_message(self, question):
-        return {
-            "role": "user",
-            "content": f"Summarize the following youtube video transcript.\n\nTranscript:\n{question}"
-        }
+
+def create_message(question):
+    return {
+        "role": "user",
+        "content": f"Summarize the following youtube video transcript.\n\nTranscript:\n{question}"
+    }

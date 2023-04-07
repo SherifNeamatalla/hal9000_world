@@ -3,7 +3,7 @@ import os
 import requests
 
 from commands.cmd_interface import ICmd
-from util.storage_loader import get_saved_agents, load_agent, delete_agent_data, GENERATED_DIR
+from util.storage_loader import GENERATED_DIR
 
 
 class CmdFile(ICmd):
@@ -39,12 +39,14 @@ def read_file(filename):
     except Exception as e:
         return "Error: " + str(e)
 
+
 def download(filename, url):
     response = requests.get(url)
     filepath = safe_join(GENERATED_DIR, filename)
     with open(filepath, 'wb') as out_file:
         out_file.write(response.content)
     return "File downloaded successfully."
+
 
 def write_to_file(filename, text):
     try:
@@ -83,6 +85,6 @@ def safe_join(base, *paths):
     norm_new_path = os.path.normpath(new_path)
 
     if os.path.commonprefix([base, norm_new_path]) != base:
-        raise ValueError("Attempted to access outside of working directory.")
+        return "Attempted to access outside of working directory."
 
     return norm_new_path

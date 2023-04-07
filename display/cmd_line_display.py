@@ -4,11 +4,6 @@ from colorama import Fore, Style
 
 from display.display_interface import IDisplay
 
-USER_INPUT_STYLE = {
-    "color": Fore.GREEN,
-    "style": Style.BRIGHT
-}
-
 
 class CmdLineDisplay(IDisplay):
     def prompt_user_input(self, message="User Input:"):

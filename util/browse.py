@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
+from config.constants import BROWSER_AGENT_PRESET_NAME
+
 
 def scrape_text(url):
     response = requests.get(url)
@@ -79,7 +81,7 @@ def create_message(chunk, question):
 
 
 def summarize_text(text, question):
-    from agents.browser_agent import BrowserAgent
+    from agents.config import AgentConfig
 
     if not text:
         return "Error: No text to summarize"
@@ -87,17 +89,17 @@ def summarize_text(text, question):
     summaries = []
     chunks = list(split_text(text))
 
-    browser_agent = BrowserAgent()
+    single_use_agent = AgentConfig.from_preset(BROWSER_AGENT_PRESET_NAME)
 
     for i, chunk in enumerate(chunks):
         messages = [create_message(chunk, question)]
 
-        summary = browser_agent.chat(messages)
+        summary = single_use_agent.chat(messages)
         summaries.append(summary)
 
     combined_summary = "\n".join(summaries)
     messages = [create_message(combined_summary, question)]
 
-    final_summary = browser_agent.chat(messages)
+    final_summary = single_use_agent.chat(messages)
 
     return final_summary

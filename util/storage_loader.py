@@ -1,17 +1,17 @@
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
+
 import yaml
 
+from agents.agents_factory import create_agent_by_type
+from config.constants import AGENTS_DIR
+
 STORAGE_DIR = os.path.join(Path(__file__).parent.parent, "storage")
-AGENTS_DIR = os.path.join(STORAGE_DIR, "agents")
 GENERATED_DIR = os.path.join(STORAGE_DIR, "generated")
 
 
 def load_agent(agent_name):
-    from agents.base_agent import BASE_AGENT_TYPE, BaseAgent
-    from agents.browser_agent import BROWSER_AGENT_TYPE, BrowserAgent
-    from agents.single_use_agent import SINGLE_USE_AGENT_TYPE, SingleUserAgent
     from agents.config import AgentConfig
 
     agent_path = os.path.join(AGENTS_DIR, agent_name)
@@ -23,16 +23,7 @@ def load_agent(agent_name):
         goals = yaml_content['goals'] if 'goals' in yaml_content else []
         personal_goals = yaml_content['personal_goals'] if 'personal_goals' in yaml_content else []
 
-        if config.get('type') == BROWSER_AGENT_TYPE:
-            return BrowserAgent()
-
-        if config.get('type') == SINGLE_USE_AGENT_TYPE:
-            return SingleUserAgent(name, role, config.get('save_model'))
-
-        if config.get('type') == BASE_AGENT_TYPE:
-            return BaseAgent(name, role, config, goals, personal_goals)
-
-        return BaseAgent(name, role, config)
+        return create_agent_by_type(name, role, config, config.get('type'), goals, personal_goals)
 
 
 def get_saved_agents():

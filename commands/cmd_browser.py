@@ -1,11 +1,11 @@
-import ssl
-
 from commands.cmd_interface import ICmd
 from util.browse import scrape_text, summarize_text, scrape_links
 
-# TODO not safe
-context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-context.verify_mode = ssl.CERT_NONE
+
+class CmdBrowser(ICmd):
+    def execute(self, cmd_args, cmd_type='search'):
+        if cmd_type == 'search':
+            return browse_website(cmd_args['url'], cmd_args['question'])
 
 
 def get_hyperlinks(url):
@@ -30,10 +30,3 @@ def browse_website(url, question):
     result = f"""Website Content Summary: {summary}\n\nLinks: {links}"""
 
     return result
-
-
-class CmdBrowser(ICmd):
-    def execute(self, cmd_args, cmd_type='search'):
-        if cmd_type == 'search':
-            return browse_website(cmd_args['url'], cmd_args['question'])
-

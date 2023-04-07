@@ -9,7 +9,7 @@ class CmdAgents(ICmd):
 
     def execute(self, cmd_args, cmd_type='search'):
         if cmd_type == 'create':
-            return start_agent(cmd_args['name'], cmd_args['task'],cmd_args['save_for_later_use'])
+            return start_agent(cmd_args['name'], cmd_args['task'])
 
         if cmd_type == 'get':
             agents = list_agents()
@@ -26,12 +26,12 @@ class CmdAgents(ICmd):
             return delete_agent(cmd_args['name'])
 
         if cmd_type == 'message':
-            return message_agent(cmd_args['name'], cmd_args['message'], cmd_args.get('input', None))
+            return message_agent(cmd_args['name'], cmd_args['message'])
 
         pass
 
 
-def start_agent(name, task, save_for_later_use=False):
+def start_agent(name, task, save_for_later_use=True):
     from agents.sub_agent import SubAgent
 
     agent = SubAgent(name, task, None, save_for_later_use)

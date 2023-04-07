@@ -4,7 +4,6 @@ COMMANDS:
 3.Memory Delete: name: "memory", args: "key": "<key>" type: "delete" - Delete the value associated with the given key from the agent's memory.
 4.Memory Get: name: "memory", args: "key": "<key>" type: "get" - Retrieve the value associated with the given key from the agent's memory.
 5.Browse Website: name: "browser", args: "url": "<url>", "question": "<what_you_want_to_find_on_website>" type: "search" - Browse the given website and search for the given question.
-6.Create new GPT Agent: name: "agents", args: "name": <name>, "task": "<short_task_desc>", "save_for_later_use": "<save_for_later_use>" type: "create" - Create a new GPT agent with the given name, task, prompt describing your question to it, and option to save for later use.
 7.Message existing GPT Agent: name: "agents", args: "name": "<name>", "message": "<message>" type: "message" - Send a message to an existing GPT agent with the given name and input, and receive a response.
 8.List existing GPT Agents: name: "agents", args: "" type: "list" - List all existing GPT agents and their details.
 9.Delete existing GPT Agent: name: "agents", args: "name": "<name>" type: "delete" - Delete an existing GPT agent with the given name.

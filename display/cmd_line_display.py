@@ -52,7 +52,7 @@ class CmdLineDisplay(IDisplay):
         for goal in goals:
             print(Fore.WHITE + f"{goal}" + Style.RESET_ALL, flush=True)
 
-        print(Fore.YELLOW + f"Personal Goals:" + Style.RESET_ALL, flush=True)
+        print(Fore.YELLOW + f"Plans:" + Style.RESET_ALL, flush=True)
 
         for goal in personal_goals:
             print(Fore.WHITE + f"{goal}" + Style.RESET_ALL, flush=True)

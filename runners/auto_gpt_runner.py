@@ -19,9 +19,9 @@ class AutoGptRunner(IRunner):
         agent.act()
         while True:
             with Spinner("Thinking... "):
-                agent.chat()
+                command_json = agent.chat()
 
-            agent.act()
+            agent.act(command_json)
 
     def get_user_input(self):
         return input("User Input: ")
@@ -41,6 +41,11 @@ class AutoGptRunner(IRunner):
             role = display.prompt_user_input("Enter the role of the agent: ")
             prompt_start_path = display.prompt_user_input("Enter the prompt start path: (Leave empty for default)")
 
+            commands_set_path = display.prompt_user_input("Enter the path to the commands set: ")
+
+            if commands_set_path == "":
+                commands_set_path = BASE_COMMANDS_SET_NAME
+
             if prompt_start_path == "":
                 prompt_start_path = None
 
@@ -51,11 +56,6 @@ class AutoGptRunner(IRunner):
                 if goal == "":
                     break
                 goals.append(goal)
-
-            commands_set_path = display.prompt_user_input("Enter the path to the commands set: ")
-
-            if commands_set_path == "":
-                commands_set_path = BASE_COMMANDS_SET_NAME
 
             config = AgentConfig(commands_set_path=commands_set_path, prompt_start_path=prompt_start_path)
 

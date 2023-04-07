@@ -1,9 +1,8 @@
 import os
-from pathlib import Path
 
+from config.constants import PROMPTS_DIR
 from logger.logger import log
 
-PROMPTS_DIR = Path(__file__).parent
 COMMANDS_SETS_DIR = "commands_sets"
 
 

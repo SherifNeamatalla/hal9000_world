@@ -7,8 +7,8 @@ import yaml
 from agents.memory.file_long_term_memory import FileLongTermMemory
 from agents.memory.short_term_memory import BaseMemory
 from commands.commands_executor import execute_cmd
+from config.app_config import AppConfig
 from config.constants import *
-from display.cmd_line_display import CmdLineDisplay
 from logger.logger import log
 from prompts.prompt_loader import load_commands_set, load_prompt
 from util.token_counter import create_short_term_memory_context
@@ -16,8 +16,7 @@ from util.util import create_message
 
 
 class BaseAgent:
-    def __init__(self, name, role, config, goals=[], personal_goals=[], display_manager=CmdLineDisplay(),
-                 voice_manager=None):
+    def __init__(self, name, role, config, goals=[], personal_goals=[]):
         # This holds the long term memory, agent decides what to store here
         self.name = name
         self.role = role
@@ -27,8 +26,6 @@ class BaseAgent:
         self.long_term_memory = FileLongTermMemory(self.name)
         # This holds the current conversation
         self.short_term_memory = BaseMemory(self.name)
-        self.display_manager = display_manager
-        self.voice_manager = voice_manager
         self.config = config
         self.save()
 
@@ -48,8 +45,9 @@ class BaseAgent:
                 user_input = last_message['content'] + ", " + self.config.get('default_user_input')
 
             else:
-                user_input = user_input + self.config.get('default_user_input') if user_input else self.config.get(
-                    'default_user_input')
+                user_input = self.config.get('default_user_input')
+        else:
+            user_input = user_input + ", " + self.config.get('default_user_input')
 
         context, remaining_tokens = self.create_context(user_input)
 
@@ -68,9 +66,10 @@ class BaseAgent:
 
         return new_response_json
 
-    def act(self):
-        # Find the last message from the assistant to act upon it
-        response_json = self.short_term_memory.get_last_message(ASSISTANT_ROLE)
+    def act(self, response_json=None):
+        if not response_json:
+            # Find the last message from the assistant to act upon it
+            response_json = self.short_term_memory.get_last_message(ASSISTANT_ROLE)
 
         try:
             response = json.loads(response_json)
@@ -103,26 +102,25 @@ class BaseAgent:
         if len(self.personal_goals) > self.config.get('max_personal_goals'):
             self.personal_goals = self.personal_goals[:self.config.get('max_personal_goals')]
 
-        self.display_manager.print_agent_goals(self.goals, self.personal_goals)
+        AppConfig().display_manager.print_agent_goals(self.goals, self.personal_goals)
 
     def write(self, thoughts):
-        if not self.display_manager:
-            return
+        AppConfig().display_manager.print_agent_thoughts(thoughts['text'])
 
-        self.display_manager.print_agent_thoughts(thoughts['text'])
+        AppConfig().display_manager.print_agent_criticism(thoughts['criticism'])
 
-        self.display_manager.print_agent_criticism(thoughts['criticism'])
-
-        self.display_manager.print_agent_reasoning(thoughts['reasoning'])
+        AppConfig().display_manager.print_agent_reasoning(thoughts['reasoning'])
 
     def speak(self, thoughts):
-        if not self.voice_manager:
+        if not AppConfig().voice_manager:
             return
 
-        self.voice_manager.speak(thoughts['speak'])
+        AppConfig().voice_manager.speak(thoughts['speak'])
 
     def execute_command(self, command):
         if not command or not command['name']:
+            # When agent has no output command, this usually means they're going to an infinite loop
+            self.ask_for_permission(command)
             return
 
         command_name = command['name']
@@ -152,28 +150,29 @@ class BaseAgent:
 
         command_name = command['name']
 
-        self.display_manager.print_executing_command(command_name, command.get('args', {}), command.get('type', None))
+        AppConfig().display_manager.print_executing_command(command_name, command.get('args', {}),
+                                                            command.get('type', None))
 
         command_result = execute_cmd(command)
 
-        self.display_manager.print_command_result(command_name, command_result)
+        AppConfig().display_manager.print_command_result(command_name, command_result)
 
         log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
 
         self.add_command_result(command_name, command_result)
 
         if command_name == SNOWFLAKE_COMMAND:
-            user_input = self.display_manager.prompt_user_input(command_result)
+            user_input = AppConfig().display_manager.prompt_user_input(command_result)
             self.add_human_feedback(user_input)
 
     def execute_user_prompt_command(self, command_args, command_type):
         if command_type == 'prompt':
-            user_input = self.display_manager.prompt_user_input(command_args['prompt'])
+            user_input = AppConfig().display_manager.prompt_user_input(command_args['prompt'])
             self.add_human_feedback(user_input)
 
     def ask_for_permission(self, command):
         if not self.config.get('autonomous'):
-            command_name, user_input = self.display_manager.ask_permission(self.name, command)
+            command_name, user_input = AppConfig().display_manager.ask_permission(self.name, command)
 
             if user_input == 'n':
                 self.add_human_feedback(ACTION_DENIED)
@@ -186,7 +185,7 @@ class BaseAgent:
         return True
 
     def execute_memory_command(self, command_args, command_type):
-        self.display_manager.print_executing_command(MEMORY_COMMAND, command_args, command_type)
+        AppConfig().display_manager.print_executing_command(MEMORY_COMMAND, command_args, command_type)
         command_result = None
         if command_type == 'set':
             command_result = self.long_term_memory.set(command_args['key'], command_args['value'])
@@ -196,14 +195,14 @@ class BaseAgent:
             command_result = self.long_term_memory.get(command_args['key'])
             self.add_command_result(MEMORY_COMMAND, command_result)
 
-        self.display_manager.print_command_result(MEMORY_COMMAND, command_result)
+        AppConfig().display_manager.print_command_result(MEMORY_COMMAND, command_result)
 
     def add_error_command(self, command_name, error):
         command_memory_entry = f"Command {command_name} failed, error:{str(error)}"
 
         self.short_term_memory.add(create_message(SYSTEM_ROLE, command_memory_entry))
 
-        self.display_manager.print_error(command_memory_entry)
+        AppConfig().display_manager.print_error(command_memory_entry)
 
     def add_command_result(self, command_name, command_result='None'):
         if not command_result:
@@ -287,3 +286,9 @@ class BaseAgent:
                 "personal_goals": self.personal_goals
             }
             yaml.dump(yaml_content, outfile, default_flow_style=False)
+
+    def display(self):
+        if not AppConfig().display_manager:
+            return
+
+        AppConfig().display_manager.print_agent_goals(self.goals, self.personal_goals)

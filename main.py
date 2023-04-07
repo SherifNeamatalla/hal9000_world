@@ -1,13 +1,7 @@
-import os
-
-import openai
-from dotenv import load_dotenv
-
+from config.env_loader import load_env
 from runners.auto_gpt_runner import AutoGptRunner
 
-load_dotenv()
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
+load_env()
 
 
 def get_user_input():

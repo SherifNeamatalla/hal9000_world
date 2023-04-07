@@ -35,7 +35,7 @@ BROWSER_AGENT_TYPE = "BrowserAgent"
 ####Directories####
 AGENTS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "agents")
 PRESETS_DIR = os.path.join(Path(__file__).parent.parent, "storage", "presets")
-
+PROMPTS_DIR = os.path.join(Path(__file__).parent.parent, "prompts")
 ###Presets###
 BROWSER_AGENT_PRESET_NAME = 'browser_agent_preset.yaml'
 YOUTUBE_AGENT_PRESET_NAME = 'youtube_agent_preset.yaml'

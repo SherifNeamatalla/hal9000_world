@@ -25,7 +25,9 @@ DEFAULT_USER_INPUT = 'Start working on the task on hand'
 SUB_AGENT_COMMANDS_SET = 'sub_agent_commands_set.txt'
 SUB_AGENT_ROLE_PREFIX = "You are an agent whose sole task is to "
 ####Response Errors####
-ACTION_DENIED = "Action denied"
+PERMISSION_DENIED = "Action denied"
+PERMISSION_GRANTED = "Permission granted"
+WRONG_COMMAND = "The command is not quite right, check the format in the commands specified above."
 JSON_LOADING_ERROR = "parsing failed, please stick to the format specified above by the system."
 
 ####Agent Types####

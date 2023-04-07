@@ -21,6 +21,7 @@ class FileLongTermMemory(ILongTermMemory):
     def set(self, key, value):
         self.memory[key] = value
         self.cache(key, value)
+        return f"{key} in memory set to {value}"
 
     def get(self, key):
         self.cache(key, self.memory[key])
@@ -31,6 +32,8 @@ class FileLongTermMemory(ILongTermMemory):
 
         if self.cached_memory and self.cached_memory[0]['key'] == key:
             self.cached_memory.pop(0)
+
+        return f"Deleted {key} from memory"
 
     def cache(self, key, value):
         # for now allow only 1 item in cache

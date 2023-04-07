@@ -6,6 +6,7 @@ from display.cmd_line_display import CmdLineDisplay
 from display.spinner import Spinner
 from runners.runner_interface import IRunner
 from util.agents_util import load_agent_by_id
+from util.commands_util import ask_user_command_permission
 
 
 class AutoGptRunner(IRunner):
@@ -30,7 +31,11 @@ class AutoGptRunner(IRunner):
 
             agent.think()
 
-            agent.act()
+            suggested_command = agent.think()
+
+            user_response = ask_user_command_permission(agent.name, suggested_command)
+
+            agent.act(suggested_command, user_response)
 
             agent.save()
 

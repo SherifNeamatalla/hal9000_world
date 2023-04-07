@@ -1,5 +1,4 @@
 # Define the endpoint for your service
-import json
 
 from fastapi import HTTPException
 

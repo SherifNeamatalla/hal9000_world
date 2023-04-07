@@ -83,25 +83,23 @@ class BaseAgent:
 
         self.plan(thoughts)
 
-    def act(self, response_json=None):
-        last_message = self.short_term_memory.get_last_message()
+        return response['command']
 
-        # If last message wasn't from agent, it's not agent's turn to act unless a specific command is given
-        if (not last_message or last_message['role'] != ASSISTANT_ROLE) and (not response_json):
-            return "Not agent's turn to act"
+    def act(self, command, user_input):
+        if user_input == WRONG_COMMAND:
+            self.add_error_command(command['name'], WRONG_COMMAND)
 
-        if not response_json:
-            # Find the last message from the assistant to act upon it
-            response_json = self.short_term_memory.get_last_message(ASSISTANT_ROLE)
-        try:
-            response = json.loads(response_json)
-        except Exception as e:
-            # This error will be shown to agent, maybe agent can react to it
-            self.add_error_command(JSON_LOADING_ERROR, e)
-            return
+        # Action denied from user
+        if user_input == PERMISSION_DENIED:
+            self.add_human_feedback(PERMISSION_DENIED)
+            return PERMISSION_DENIED
+        command_name = command['name']
 
-        # Has name and args
-        command = response['command']
+        # Memory is handled by agent itself and not by the command executor
+        if command_name == MEMORY_COMMAND:
+            command_args = command.get('args', {})
+            command_type = command.get('type', None)
+            return self.execute_memory_command(command_args, command_type)
 
         try:
             return self.execute_command(command)
@@ -131,36 +129,6 @@ class BaseAgent:
         AppConfig().voice_manager.speak(thoughts['speak'])
 
     def execute_command(self, command):
-        if not command or not command['name']:
-            # When agent has no output command, this usually means they're going to an infinite loop
-            self.ask_for_permission(command)
-            return
-
-        command_name = command['name']
-
-        # If agent needs some user input to continue, ask for it
-        if command_name == USER_COMMAND:
-            command_args = command.get('args', {})
-            command_type = command.get('type', None)
-            self.execute_user_prompt_command(command_args, command_type)
-            return
-
-        # This hardcodes the agent to be able to automatically update its memory without user permission
-        # to change this behaviour you can move this block after the autonomous check
-        if command_name == MEMORY_COMMAND:
-            # TODO: error if no command_args
-            command_args = command.get('args', {})
-            command_type = command.get('type', None)
-            self.execute_memory_command(command_args, command_type)
-            return
-
-        can_continue = True
-        if not command_name == SNOWFLAKE_COMMAND:
-            can_continue = self.ask_for_permission(command)
-
-        if not can_continue:
-            return
-
         command_name = command['name']
 
         AppConfig().display_manager.print_executing_command(command_name, command.get('args', {}),
@@ -170,13 +138,7 @@ class BaseAgent:
 
         AppConfig().display_manager.print_command_result(command_name, command_result)
 
-        log(f"Agent {self.name} executed command {command_name} and got result: {command_result}")
-
         self.add_command_result(command_name, command_result)
-
-        if command_name == SNOWFLAKE_COMMAND:
-            user_input = AppConfig().display_manager.prompt_user_input(command_result)
-            self.add_human_feedback(user_input)
 
         return command_result
 
@@ -190,7 +152,7 @@ class BaseAgent:
             command_name, user_input = AppConfig().display_manager.ask_permission(self.name, command)
 
             if user_input == 'n':
-                self.add_human_feedback(ACTION_DENIED)
+                self.add_human_feedback(PERMISSION_DENIED)
                 return False
 
             if command_name == "human_feedback":
@@ -211,6 +173,8 @@ class BaseAgent:
             self.add_command_result(MEMORY_COMMAND, command_result)
 
         AppConfig().display_manager.print_command_result(MEMORY_COMMAND, command_result)
+
+        return command_result
 
     def add_error_command(self, command_name, error):
         command_memory_entry = f"Command {command_name} failed, error:{str(error)}"

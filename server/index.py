@@ -2,6 +2,7 @@ from fastapi import FastAPI, Body
 from starlette.middleware.cors import CORSMiddleware
 
 from config.env_loader import load_env
+from config.saved_app_configs import SERVER_APP_CONFIG, SERVER_APP_CONFIG_NAME
 from runner import do_load_agent, do_act, do_chat, do_create_agent, do_list_agents
 from util.config_util import init_app_config
 
@@ -53,6 +54,6 @@ async def act(agent_id: str, command: dict = Body(...)):
 if __name__ == "__main__":
     import uvicorn
 
-    init_app_config()
+    init_app_config(SERVER_APP_CONFIG_NAME)
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

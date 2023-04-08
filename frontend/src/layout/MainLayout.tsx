@@ -4,7 +4,7 @@ import Grid from '@material-ui/core/Grid';
 import AgentsList from '../agent/AgentsList';
 import ChatWindow from '../chat/ChatWindow';
 import AgentState from '../agent/AgentState';
-import Actions from './Actions';
+import Actions from '../chat/Actions';
 import { Stack } from '@mui/material';
 // @ts-ignore
 // @ts-ignore

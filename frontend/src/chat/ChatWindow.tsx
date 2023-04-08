@@ -4,6 +4,8 @@ import { styled } from '@mui/system';
 import { List, ListItem, ListSubheader, Stack } from '@mui/material';
 import { ListItemText } from '@material-ui/core';
 import './ChatWindow.css';
+// @ts-ignore
+import ReactTypingEffect from 'react-typing-effect';
 
 interface Props {
   agentState: any;
@@ -79,8 +81,11 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage }) => {
   const [speak, setSpeak] = useState<string>('');
   const [reasoning, setReasoning] = useState<string>('');
   const [plan, setPlan] = useState<string>('');
-
   const [showHal, setShowHal] = useState<boolean>(false);
+
+  const [typingSpeed, setTypingSpeed] = useState<number>(10);
+
+
   useEffect(() => {
     if (agentState.response) {
       setMessages((prevMessages) => [
@@ -182,9 +187,16 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage }) => {
     return (<Stack>
       <List>
         <ListSubheader>
-          <HeaderText>My reasoning</HeaderText>
+          <HeaderText>.....</HeaderText>
         </ListSubheader>
-        <MatrixText>{speak}</MatrixText>
+        <MatrixText>
+          <ReactTypingEffect
+            eraseDelay={999999999}
+            text={speak}
+            cursor={'_'}
+            speed={typingSpeed}
+          />
+          {}</MatrixText>
       </List>
     </Stack>);
   }

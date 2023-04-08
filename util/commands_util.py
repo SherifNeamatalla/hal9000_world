@@ -24,8 +24,12 @@ def execute_user_prompt_command(command_args, command_type):
 def ask_for_permission(name, command, autonomous=False):
     command_name = command['name']
     # These commands don't need user permission
-    if command_name in [MEMORY_COMMAND, SNOWFLAKE_COMMAND, USER_COMMAND]:
+    if command_name in [MEMORY_COMMAND, USER_COMMAND]:
         return PERMISSION_GRANTED
+
+    if command_name == SNOWFLAKE_COMMAND:
+        user_input = AppConfig().display_manager.prompt_user_input('')
+        return user_input
 
     if not autonomous:
         command_name, user_input = AppConfig().display_manager.ask_permission(name, command)

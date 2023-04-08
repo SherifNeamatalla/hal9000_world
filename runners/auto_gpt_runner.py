@@ -17,8 +17,6 @@ class AutoGptRunner(IRunner):
             with Spinner("Thinking... "):
                 agent.chat()
 
-            agent.think()
-
             suggested_command = agent.think()
 
             user_response = ask_user_command_permission(agent.name, suggested_command)

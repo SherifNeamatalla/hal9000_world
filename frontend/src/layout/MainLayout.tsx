@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme) => {
     mainContent: {
       padding: theme.spacing(2),
       height: '85%',
+      position: 'relative',
     },
     actions: {
       height: '15%',

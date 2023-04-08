@@ -52,7 +52,7 @@ const ChatWindowContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   borderRadius: '10px',
-  position: 'relative',
+  position: 'unset',
 }));
 
 
@@ -95,7 +95,34 @@ const PlanText = styled('div')(({ theme }) => ({
   fontSize: '14px',
   lineHeight: '20px',
 }));
+/*
+ position: absolute;
+  top: 50%;
+  right: 50%;
+  width: 100px;
+  height: 100px;
+  background-color: red;
+border-radius: 50%;
+transform: translate(-50%, -50%);
+opacity: 0;
+animation: pulse 2s infinite;
+ */
+const Hal = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  right: '50%',
+  left: '50%',
+  bottom: '50%',
+  width: '100px',
+  height: '100px',
+  backgroundColor: 'red',
+  borderRadius: '50%',
+  transform: 'translate(-50%, -50%)',
+  opacity: 0,
+  animation: 'pulse 5s infinite',
 
+
+}));
 const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResendMessage, onAgentAct, showHal }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -104,6 +131,7 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
   const [typingSpeed, setTypingSpeed] = useState<number>(10);
 
 
+  console.debug({ showHal });
   useEffect(() => {
     if (agentState.response) {
       setMessages((prevMessages) => [
@@ -177,7 +205,6 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
   function agentMessageComponent(content: any) {
     const thoughts = content['thoughts'];
 
-    console.debug({content, thoughts,boolo:!!thoughts?.['text']})
     if (!thoughts) {
       return null;
     }
@@ -198,9 +225,9 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
             {thoughts['reasoning']}
           </ReasoningText>), faBrain)}
           {planComponent(thoughts['speak'])}
-          {thoughts['speak'] && contentEntryComponent((<ReasoningText>
+          {thoughts['speak'] && contentEntryComponent((<MatrixText>
             {thoughts['speak']}
-          </ReasoningText>), faMicrophone)}
+          </MatrixText>), faMicrophone)}
         </List>
       </ListItem>
     );
@@ -318,11 +345,12 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
     </>);
 
 
-    return <ChatWindowContainer className={(showHal ? 'hal_9000' : '')+' scrollable-container'}>
+    return <ChatWindowContainer className={'scrollable-container'}>
       <List className={'scrollable-content'}>
         {content}
         {commandMessageComponent()}
       </List>
+      {!showHal && <Hal/>}
     </ChatWindowContainer>;
 
   }

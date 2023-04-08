@@ -1,33 +1,19 @@
-.hal_9000 {
-
-  color: inherit;
-}
-
-.hal_9000::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background-color: red;
-  opacity: 1;
-  animation: pulse 2s ease-in-out infinite; /* Add animation property to always animate */
-}
 
 @keyframes pulse {
   0% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
   }
   50% {
-    transform: translate(-50%, -50%) scale(0.5);
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
   }
   100% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
   }
 }
+
 
 .cursor {
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20"><rect x="7" y="3" width="2" height="14" rx="1" fill="white"/><rect x="7" y="3" width="2" height="14" rx="1" fill="black"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite"/></rect></svg>'), auto;

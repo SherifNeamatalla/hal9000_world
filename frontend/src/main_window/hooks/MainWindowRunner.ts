@@ -232,6 +232,7 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
       setSelectedAgent(agent);
       setLogs(logs);
     } catch (error) {
+    } finally {
       setShowHal(false);
     }
 

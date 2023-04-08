@@ -9,8 +9,6 @@ from util.commands_util import ask_user_command_permission
 
 class AutoGptRunner(IRunner):
     def run(self):
-        reset_agent('9')
-
         agent = self.load_agent()
 
         AppConfig().display_manager.print_hello_world(agent.name)

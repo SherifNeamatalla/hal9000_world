@@ -13,11 +13,11 @@ export function loadAgent(agentId: string) {
   return axiosInstance.get<Agent>(`/agent/load/${agentId}`);
 }
 
-export function chat(agentId: string, message: string) {
+export function chatAgent(agentId: string, message?: string) {
   return axiosInstance.post<Agent>(`/agent/chat/${agentId}`, { message });
 }
 
-export function act(agentId: string, command: any) {
+export function actAgent(agentId: string, command: any) {
   return axiosInstance.post<Agent>(`/agent/act/${agentId}`, command);
 }
 

@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { listAgents } from '../api/AgentsApiService';
+import React from 'react';
 import { Agent } from './model/Agent';
 import { ListItemText } from '@material-ui/core';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -58,19 +57,15 @@ const ListItemTextContainer = styled(ListItemText)(({ theme }) => ({
   color: theme.palette.customColors.brightGreen2,
 }));
 
-function AgentsList({ selectedAgent, setSelectedAgent }: any) {
-  const agents = useAgents();
+function AgentsList({ selectedAgentId, setSelectedAgentId, agents }: any) {
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAgent(event.target.value);
-  };
 
   function agentComponent(agent: Agent) {
     return (
       <ListItemContainer key={agent.id}>
-        <ListItemButtonContainer selected={selectedAgent === agent.id} onClick={() => setSelectedAgent(agent.id)}>
+        <ListItemButtonContainer selected={selectedAgentId === agent.id} onClick={() => setSelectedAgentId(agent.id)}>
           <ListItemIconContainer>
-            {selectedAgent === agent.id ? <AnimatedSmartToyIcon /> : <SmartToyIcon />}
+            {selectedAgentId === agent.id ? <AnimatedSmartToyIcon /> : <SmartToyIcon />}
           </ListItemIconContainer>
           <ListItemTextContainer primary={agent.name} />
         </ListItemButtonContainer>
@@ -82,7 +77,7 @@ function AgentsList({ selectedAgent, setSelectedAgent }: any) {
     console.debug('AgentsList', agents);
     return (
       <ListContainer>
-        {agents.map((agent: Agent) => agentComponent(agent))}
+        {(agents || []).map((agent: Agent) => agentComponent(agent))}
       </ListContainer>
     );
   }
@@ -92,23 +87,3 @@ function AgentsList({ selectedAgent, setSelectedAgent }: any) {
 
 export default AgentsList;
 
-
-function useAgents() {
-
-  const [agents, setAgents] = useState<Agent[]>([]);
-
-  useEffect(() => {
-    async function fetchAgents() {
-      // Axios response
-      const response = await listAgents();
-      console.debug({ response });
-      setAgents(response.data);
-    }
-
-    fetchAgents();
-  }, []);
-
-
-  return agents;
-
-}

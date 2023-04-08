@@ -1,10 +1,10 @@
-from config.app_config import AppConfig
 from database.sqlite3_db_manager import SQLite3DBManager
 from display.cmd_line_display import CmdLineDisplay
+from server.managers.server_display_manager import ServerDisplayManager
 from voice.eleven_labs_voice_manager import ElevenLabsVoiceManager
 
 SERVER_APP_CONFIG = {
-    'display_manager': CmdLineDisplay(),
+    'display_manager': ServerDisplayManager(),
     'db_manager': SQLite3DBManager(),
     'voice_manager': None,
     'save_format': None

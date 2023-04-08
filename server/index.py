@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Request
 from starlette.middleware.cors import CORSMiddleware
 
+from config.app_config import AppConfig
 from config.env_loader import load_env
-from config.saved_app_configs import SERVER_APP_CONFIG, SERVER_APP_CONFIG_NAME
+from config.saved_app_configs import SERVER_APP_CONFIG_NAME
 from runner import do_load_agent, do_act, do_chat, do_create_agent, do_list_agents
 from util.config_util import init_app_config
 
@@ -18,6 +19,17 @@ app.add_middleware(
 )
 
 load_env()
+
+
+async def reset_display_state_middleware(request: Request, call_next):
+    AppConfig().display_manager.reset_state()
+
+    response = await call_next(request)
+
+    return response
+
+
+app.middleware("http")(reset_display_state_middleware)
 
 
 @app.get("/")

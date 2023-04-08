@@ -4,8 +4,8 @@ import json
 
 
 class BaseMemory():
-    def __init__(self, agent_name, old_memory=""):
-        self.memory = self.load_from_string(old_memory)
+    def __init__(self, agent_name, old_memory=[]):
+        self.memory = old_memory
         self.agent_name = agent_name
 
     def add(self, data):
@@ -18,6 +18,8 @@ class BaseMemory():
         self.memory.extend(data)
 
     def get_last_message(self, role=None):
+        if not self.memory:
+            return None
         if not role:
             return self.memory[-1]
 
@@ -27,7 +29,7 @@ class BaseMemory():
         return None
 
     def get_as_string(self):
-        return json.dumps(self.memory)
+        return self.memory
 
     # list to string
 

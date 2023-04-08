@@ -9,17 +9,17 @@ from util.agents_util import load_agent_by_id
 
 def do_list_agents():
     agents = AppConfig().db_manager.list()
-    return [map_agent_from_dict(agent) for agent in agents]
+    return return_result([map_agent_from_dict(agent) for agent in agents])
 
 
 def do_create_agent(name: str, role, goals, config: dict):
     agent_id = AppConfig().db_manager.add(name, role, goals, config)
 
-    return map_agent(get_agent(agent_id))
+    return return_result(map_agent(get_agent(agent_id)))
 
 
 def do_load_agent(agent_id: str):
-    return map_agent(get_agent(agent_id))
+    return return_result(map_agent(get_agent(agent_id)))
 
 
 def do_chat(agent_id: str, message: str):
@@ -27,7 +27,7 @@ def do_chat(agent_id: str, message: str):
 
     runner = ServerAgentRunner(agent, user_response=message)
 
-    return map_agent(runner.run())
+    return return_result(map_agent(runner.run()))
 
 
 def do_act(agent_id: str, command_response: str, command: dict):
@@ -35,7 +35,7 @@ def do_act(agent_id: str, command_response: str, command: dict):
 
     runner = ServerAgentRunner(agent, command=command, user_response=command_response)
 
-    return map_agent(runner.run())
+    return return_result(map_agent(runner.run()))
 
 
 def get_agent(agent_id: str):
@@ -55,13 +55,21 @@ def map_agent_from_dict(agent):
         'goals': agent['goals'],
         'chatHistory': agent['short_term_memory'],
     }
-def map_agent(agent):
 
+
+def map_agent(agent):
     return {
         'id': agent.id,
         'name': agent.name,
         'role': agent.role,
         'config': agent.config.to_dict(),
         'goals': agent.goals,
-        'chatHistory': agent.short_term_memory.get_as_string(),
+        'chatHistory': agent.short_term_memory.memory,
+    }
+
+
+def return_result(result):
+    return {
+        "result": result,
+        "logs": AppConfig().display_manager.get_logs(),
     }

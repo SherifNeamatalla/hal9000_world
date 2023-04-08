@@ -46,3 +46,11 @@ class IDisplay(ABC):
     @abstractmethod
     def print_error(self, command_memory_entry):
         pass
+
+    @abstractmethod
+    def reset_state(self):
+        pass
+
+    @staticmethod
+    def get_logs(self):
+        pass

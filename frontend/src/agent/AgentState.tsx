@@ -5,6 +5,7 @@ import { Divider, List, ListItem, ListItemText, TextField } from '@mui/material'
 interface AgentStateProps {
   agentState: any;
   setAgentState: any;
+  goals: any;
 }
 
 const AgentStateContainer = styled('div')(({ theme }) => ({
@@ -27,7 +28,7 @@ const CommandTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-function AgentState({ agentState, setAgentState }: AgentStateProps) {
+function AgentState({ agentState, setAgentState, goals }: AgentStateProps) {
   const [isCommandNameEnabled, setIsCommandNameEnabled] = React.useState(false);
   const [isCommandTypeEnabled, setIsCommandTypeEnabled] = React.useState(false);
 
@@ -61,14 +62,14 @@ function AgentState({ agentState, setAgentState }: AgentStateProps) {
   return (
     <AgentStateContainer>
       <List>
-        {(agentState?.goals || ['Goal1', 'Goal2', 'Goal3']) && (
+        {(goals || []) && (
           <>
             <ListItem>
               <ListItemText primary='Agent Goals' />
             </ListItem>
-            {(agentState.goals || ['Goal1', 'Goal2', 'Goal3']).map((goal: string, index: number) => (
+            {(goals || []).map((goal: string, index: number) => (
               <ListItem key={index}>
-                <ListItemText primary={goal} />
+                <ListItemText primary={(index+1)+'. '+goal} />
               </ListItem>
             ))}
             <Divider />

@@ -36,15 +36,8 @@ const useStyles = makeStyles((theme) => {
 });
 
 
-interface Props {
-  selectedAgent: string | null;
-  setSelectedAgent: any;
-  agentState: any;
-  setAgentState: any;
-  sendMessage: any;
-}
 
-const MainLayout: React.FC<Props> = ({ selectedAgent, setSelectedAgent, agentState, setAgentState, sendMessage }) => {
+const MainLayout = (props: any) => {
   const classes = useStyles();
 
   function onActionClick(action: string): void {
@@ -55,15 +48,15 @@ const MainLayout: React.FC<Props> = ({ selectedAgent, setSelectedAgent, agentSta
     <Stack direction={'row'} className={classes.root}>
       {/* Left Part */}
       <Grid item xs={12} md={2} className={classes.sidebar}>
-        <AgentsList selectedAgent={selectedAgent} setSelectedAgent={setSelectedAgent} />
+        <AgentsList {...props} />
       </Grid>
 
       <Grid item xs={12} md={7} >
         <Grid className={classes.mainContent}>
-          <ChatWindow agentState={agentState} sendMessage={sendMessage} />
+          <ChatWindow {...props} />
         </Grid>
         <Grid item  className={classes.actions}>
-          <Actions onActionClick={onActionClick} />
+          <Actions onActionClick={onActionClick} {...props} />
         </Grid>
       </Grid>
       {/* Main Content */}
@@ -71,7 +64,7 @@ const MainLayout: React.FC<Props> = ({ selectedAgent, setSelectedAgent, agentSta
 
       {/* Right Part */}
       <Grid item xs={12} md={3} className={classes.agentState}>
-        <AgentState agentState={agentState} setAgentState={setAgentState} />
+        <AgentState {...props} />
       </Grid>
 
       {/* Bottom Chat Window */}

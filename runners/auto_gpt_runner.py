@@ -19,6 +19,9 @@ class AutoGptRunner(IRunner):
 
             suggested_command = agent.think()
 
+            if suggested_command is None:
+                continue
+
             user_response = ask_user_command_permission(agent.name, suggested_command)
 
             agent.act(suggested_command, user_response)

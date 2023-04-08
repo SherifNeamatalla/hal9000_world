@@ -49,7 +49,7 @@ class SQLite3DBManager(IDBManager):
         if long_term_memory:
             ltm_str = json.dumps(long_term_memory)
             c.execute("UPDATE agents SET long_term_memory=? WHERE id=?", (ltm_str, agent_id))
-        if short_term_memory:
+        if short_term_memory is not None:
             stm_str = json.dumps(short_term_memory)
             c.execute("UPDATE agents SET short_term_memory=? WHERE id=?", (stm_str, agent_id))
         conn.commit()

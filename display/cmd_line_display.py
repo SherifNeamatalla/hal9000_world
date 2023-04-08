@@ -6,6 +6,7 @@ from display.display_interface import IDisplay
 
 
 class CmdLineDisplay(IDisplay):
+
     def prompt_user_input(self, message="User Input:"):
         message = message if message else "User Input: "
         return input(Fore.WHITE + message + Style.RESET_ALL)
@@ -91,3 +92,9 @@ class CmdLineDisplay(IDisplay):
 
     def print_agent_thoughts(self, thoughts):
         print(Fore.LIGHTGREEN_EX + f"Thoughts: " + Fore.GREEN + f"{thoughts}" + Style.RESET_ALL, flush=True)
+
+    def reset_state(self):
+        pass
+
+    def get_logs(self):
+        return None

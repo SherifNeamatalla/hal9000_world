@@ -6,6 +6,7 @@ from config.app_config import AppConfig
 from config.env_loader import load_env
 from config.saved_app_configs import SERVER_APP_CONFIG_NAME
 from runner import do_load_agent, do_act, do_chat, do_create_agent, do_list_agents
+from util.agents_util import reset_agent
 from util.config_util import init_app_config
 
 
@@ -70,6 +71,17 @@ async def act(agent_id: str, body: ActResponseBody):
     command_response = body.command_response
     command = body.command
     return do_act(agent_id, command_response, command)
+
+
+@app.get("/agent/reset/{agent_id}")
+async def reset(agent_id: str):
+    reset_agent(agent_id)
+
+    agent = do_load_agent(agent_id)
+
+    agent.save()
+
+    return agent
 
 
 if __name__ == "__main__":

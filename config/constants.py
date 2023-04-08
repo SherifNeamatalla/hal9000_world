@@ -31,7 +31,8 @@ PERMISSION_DENIED = "Action denied"
 PERMISSION_GRANTED = "Permission granted"
 WRONG_COMMAND = "The command is not quite right, check the format in the commands specified above, the format has to " \
                 "match it exactly don't be verbose."
-JSON_LOADING_ERROR = "parsing failed, please stick to the format specified above by the system."
+JSON_LOADING_ERROR = "parsing failed, please stick to the format specified above by the system,no verbose, no extra information, no extra commands, no extra thoughts, no confirmation ' \
+                     'that you understood, only reply in JSON format."
 
 ####Agent Types####
 BASE_AGENT_TYPE = "BaseAgent"

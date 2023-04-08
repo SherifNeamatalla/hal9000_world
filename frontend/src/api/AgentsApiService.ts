@@ -24,3 +24,7 @@ export function actAgent(agentId: string, commandResponse: string, command: any)
     command: command,
   });
 }
+
+export function resetAgentShortMemory(agentId: string) {
+  return axiosInstance.post(`/agent/reset/${agentId}`);
+}

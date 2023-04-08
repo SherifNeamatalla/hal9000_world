@@ -4,6 +4,7 @@ import SendIcon from '@material-ui/icons/Send';
 import { InputAdornment } from '@material-ui/core';
 import { TextField } from '@mui/material';
 import { commandNeedsPermission } from '../util/commands_util';
+import './ChatWindow.css';
 
 const ActionsContainer = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -42,6 +43,7 @@ const Actions: React.FC<any> = ({ onSendMessage, selectedAgentId, command, onAge
 
   const [message, setMessage] = React.useState<string>('');
 
+
   useEffect(() => {
     setMessage('');
   }, [selectedAgentId]);
@@ -66,6 +68,12 @@ const Actions: React.FC<any> = ({ onSendMessage, selectedAgentId, command, onAge
       handleActionClick();
     }
   };
+
+
+  if (!selectedAgentId) {
+    return null;
+  }
+
   return (
     <ActionsContainer>
       <TextAreaContainer>
@@ -77,7 +85,9 @@ const Actions: React.FC<any> = ({ onSendMessage, selectedAgentId, command, onAge
                 onClick={() => handleActionClick()}
                 position='end'
               >
-                <SendIcon style={{ transform: 'rotate(-45deg)' }} />
+                <SendIcon
+                  className={'icon-rotator'}
+                  style={{ transform: 'rotate(-45deg)' }} />
               </InputAdornment>
             ),
           }}

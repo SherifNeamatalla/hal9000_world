@@ -3,6 +3,7 @@ import { actAgent, chatAgent, listAgents, loadAgent } from '../../api/AgentsApiS
 import { Agent } from '../../agent/model/Agent';
 import { AGENT_ROLE, USER_ROLE } from '../../config/Constants';
 import { parseJSONWithTrailingCommas } from '../../util/json_util';
+import { synthesizeSpeech } from '../../api/ElevenLabsApi';
 
 //TODO : refactor the fuck out of this monstrosity
 export function useMainWindowRunner() {
@@ -17,8 +18,9 @@ export function useMainWindowRunner() {
   const {
     selectedAgent, selectedAgentId, setSelectedAgentId,
     command, goals, role, config, chatHistory,
-    onSendMessage, onResendMessage, onAgentAct,
+    onSendMessage, onResendMessage, onAgentAct, audioUrl,
   } = useAgentSelected(agents, setLogs, showHal, setShowHal);
+
 
 
   return {
@@ -38,6 +40,7 @@ export function useMainWindowRunner() {
     onResendMessage,
     onAgentAct,
     showHal,
+    audioUrl,
   };
 }
 
@@ -52,7 +55,10 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
   const [role, setRole] = useState<string | undefined>(undefined);
   const [config, setConfig] = useState<string | undefined>(undefined);
   const [chatHistory, setChatHistory] = useState<Array<any>>([]);
-  const [thoughts, setThoughts] = useState<string | undefined>(undefined);
+  const [thoughts, setThoughts] = useState<any>(undefined);
+  const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
+
+
   useEffect(() => {
     if (!selectedAgentId || !agents.length) {
       setSelectedAgent(null);
@@ -62,6 +68,16 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
     fetchAgent();
   }, [selectedAgentId, agents]);
 
+  useEffect(() => {
+    if (!thoughts || !thoughts?.speak) {
+      setAudioUrl(undefined);
+      return;
+    }
+
+    handleSynthesizeSpeech(thoughts.speak);
+
+
+  }, [thoughts]);
 
   useEffect(() => {
     if (!selectedAgent) {
@@ -93,7 +109,6 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
     });
 
 
-    console.debug({ mappedHistory });
     setGoals(selectedAgent.goals);
     setRole(selectedAgent.role);
     setConfig(selectedAgent.config);
@@ -101,6 +116,22 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
     setCommandFromHistory(mappedHistory);
 
   }, [selectedAgent]);
+
+  async function handleSynthesizeSpeech(text: string) {
+    const elevenLabsVoices = {
+      "old_f_australian": "yb4LSSX00nWconeQQujS",
+      "young_f_british": "5OBhy9rwDPoHd4oqEeDd"
+
+    }
+
+    try {
+      const synthesizedAudioUrl = await synthesizeSpeech(text, elevenLabsVoices["young_f_british"]);
+      console.debug({synthesizedAudioUrl});
+      setAudioUrl(synthesizedAudioUrl);
+    } catch (error) {
+      console.error('Error synthesizing speech:', error);
+    }
+  };
 
 
   async function fetchAgent() {
@@ -135,6 +166,7 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
     // @ts-ignore
     const content = lastMessage?.['content'];
 
+    console.debug({content});
     setCommand(content?.['command']);
     setThoughts(content?.['thoughts']);
 
@@ -241,7 +273,7 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
   return {
     selectedAgent, selectedAgentId, setSelectedAgentId,
     command, goals, role, config, chatHistory, thoughts,
-    onSendMessage, onResendMessage, onAgentAct,
+    onSendMessage, onResendMessage, onAgentAct, audioUrl,
   };
 };
 

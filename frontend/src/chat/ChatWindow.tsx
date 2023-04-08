@@ -42,6 +42,7 @@ interface Props {
   onAgentAct: any;
   command: any;
   showHal: boolean;
+  audioUrl?: string;
 }
 
 const ChatWindowContainer = styled('div')(({ theme }) => ({
@@ -95,18 +96,7 @@ const PlanText = styled('div')(({ theme }) => ({
   fontSize: '14px',
   lineHeight: '20px',
 }));
-/*
- position: absolute;
-  top: 50%;
-  right: 50%;
-  width: 100px;
-  height: 100px;
-  background-color: red;
-border-radius: 50%;
-transform: translate(-50%, -50%);
-opacity: 0;
-animation: pulse 2s infinite;
- */
+
 const Hal = styled('div')(({ theme }) => ({
   position: 'absolute',
   top: '50%',
@@ -123,15 +113,27 @@ const Hal = styled('div')(({ theme }) => ({
 
 
 }));
-const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResendMessage, onAgentAct, showHal }) => {
+const ChatWindow: React.FC<Props> = ({
+                                       audioUrl,
+                                       agentState,
+                                       command,
+                                       chatHistory,
+                                       onResendMessage,
+                                       onAgentAct,
+                                       showHal,
+                                     }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const [messages, setMessages] = useState<string[]>([]);
-
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [typingSpeed, setTypingSpeed] = useState<number>(10);
 
 
-  console.debug({ showHal });
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
   useEffect(() => {
     if (agentState.response) {
       setMessages((prevMessages) => [
@@ -190,8 +192,8 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
   }
 
 
-  function systemMessageComponent(content: any) {
-    return (<ListItem>
+  function systemMessageComponent(content: any, index: number) {
+    return (<ListItem key={index}>
       <ListItemAvatar>
         <FontAwesomeIcon icon={faCog} />
       </ListItemAvatar>
@@ -202,14 +204,28 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
     </ListItem>);
   }
 
-  function agentMessageComponent(content: any) {
+  function speakComponent(thoughts: any, index: number) {
+    if (!thoughts?.['speak']) {
+      return null;
+    }
+    if (index === chatHistory.length - 1) {
+      return (contentEntryComponent((<MatrixText>
+        <ReactTypingEffect text={thoughts['speak']} eraseDelay={9999999} speed={typingSpeed}/>
+      </MatrixText>), faMicrophone));
+    }
+    return (contentEntryComponent((<MatrixText>
+      {thoughts['speak']}
+    </MatrixText>), faMicrophone));
+  }
+
+  function agentMessageComponent(content: any, index: number) {
     const thoughts = content['thoughts'];
 
     if (!thoughts) {
       return null;
     }
     return (
-      <ListItem>
+      <ListItem key={index}>
         <ListItemAvatar>
           <Avatar src={process.env.PUBLIC_URL + '/agent_avatar.png'} />
         </ListItemAvatar>
@@ -224,10 +240,8 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
           {thoughts['reasoning'] && contentEntryComponent((<ReasoningText>
             {thoughts['reasoning']}
           </ReasoningText>), faBrain)}
-          {planComponent(thoughts['speak'])}
-          {thoughts['speak'] && contentEntryComponent((<MatrixText>
-            {thoughts['speak']}
-          </MatrixText>), faMicrophone)}
+          {planComponent(thoughts['plan'])}
+          {speakComponent(thoughts, index)}
         </List>
       </ListItem>
     );
@@ -250,9 +264,9 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
     return null;
   };
 
-  function userMessageComponent(content: any, confirmedStatus: any) {
+  function userMessageComponent(content: any, confirmedStatus: any, index: number) {
 
-    return (<ListItem>
+    return (<ListItem key={index}>
       <ListItemAvatar>
         <FontAwesomeIcon icon={faUserTie} />
       </ListItemAvatar>
@@ -269,7 +283,7 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
     </ListItem>);
   }
 
-  function messageComponent(message: any) {
+  function messageComponent(message: any, index: number) {
     if (!message) {
       return null;
     }
@@ -281,20 +295,20 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
 
     switch (role) {
       case USER_ROLE:
-        return userMessageComponent(content, confirmedStatus);
+        return userMessageComponent(content, confirmedStatus, index);
 
       case AGENT_ROLE:
-        return agentMessageComponent(content);
+        return agentMessageComponent(content, index);
 
       case SYSTEM_ROLE:
-        return systemMessageComponent(content);
+        return systemMessageComponent(content, index);
       default:
         return 'This message has no role, this is a bug !!!';
     }
   }
 
   function commandMessageComponent() {
-    if (!command || !commandNeedsPermission(command?.['name'])) {
+    if (!command || !commandNeedsPermission(command?.['name']) || showHal) {
       return null;
     }
 
@@ -333,11 +347,10 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
   }
 
   function body() {
-    console.debug({ chatHistory });
     const content = (<>
       {(chatHistory || []).map((message: any, index: number) => (
         <>
-          {messageComponent(message)}
+          {messageComponent(message, index)}
           <Divider />
         </>
       ))}
@@ -345,12 +358,18 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
     </>);
 
 
-    return <ChatWindowContainer className={'scrollable-container'}>
+    return <ChatWindowContainer className={'scrollable-container'} ref={containerRef}>
       <List className={'scrollable-content'}>
         {content}
         {commandMessageComponent()}
       </List>
-      {showHal && <Hal/>}
+      {showHal && <Hal />}
+      {audioUrl && (
+        <audio controls>
+          <source src={audioUrl} type='audio/mpeg' />
+          Your browser does not support the audio element.
+        </audio>
+      )}
     </ChatWindowContainer>;
 
   }

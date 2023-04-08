@@ -350,7 +350,7 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
         {content}
         {commandMessageComponent()}
       </List>
-      {!showHal && <Hal/>}
+      {showHal && <Hal/>}
     </ChatWindowContainer>;
 
   }

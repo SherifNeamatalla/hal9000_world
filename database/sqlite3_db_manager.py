@@ -18,7 +18,7 @@ c.execute(f'''CREATE TABLE IF NOT EXISTS {AGENTS_TABLE}
 class SQLite3DBManager(IDBManager):
 
     # Define the functions for working with the agents table
-    def add(self, name, role, goals, config, long_term_memory="", short_term_memory=""):
+    def add(self, name, role, goals, config, long_term_memory="", short_term_memory=[]):
         goals_str = json.dumps(goals)
         config_str = json.dumps(config.__dict__())
         ltm_str = json.dumps(long_term_memory)

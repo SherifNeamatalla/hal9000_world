@@ -97,8 +97,8 @@ class ServerDisplayManager(IDisplay):
             "is_prompt": is_prompt
         })
 
-        if is_prompt:
-            return input(message)
+        # if is_prompt:
+        #     return input(message)
 
         print(message, flush=flush)
 

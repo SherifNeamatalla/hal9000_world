@@ -26,6 +26,9 @@ class ServerAgentRunner(IRunner):
     def run_command_response(self):
         self.agent.act(self.command, self.user_response)
 
+        # Agent's reaction to the command
+        self.agent.chat()
+
         self.agent.save()
 
         return self.agent
@@ -35,4 +38,9 @@ class ServerAgentRunner(IRunner):
         with Spinner("Thinking... "):
             self.agent.chat(self.user_response)
 
-        return self.agent.think()
+        result = self.agent.think()
+
+
+        self.agent.save()
+
+        return result

@@ -13,6 +13,7 @@ const AgentStateContainer = styled('div')(({ theme }) => ({
   padding: theme.spacing(2),
   height: '100%',
   borderRadius: '10px',
+  overflowY: 'auto',
 }));
 
 const CommandTextField = styled(TextField)(({ theme }) => ({
@@ -60,7 +61,7 @@ function AgentState({ command, goals }: AgentStateProps) {
           Name: {command?.name}
         </ListItemText>
       </ListItem>
-
+      <Divider/>
       <ListItem>
         <ListItemText style={{
           color: (theme.palette as any).customColors.brightGreen,
@@ -69,7 +70,7 @@ function AgentState({ command, goals }: AgentStateProps) {
           Type: {command?.type}
         </ListItemText>
       </ListItem>
-
+      <Divider/>
       <ListItem>
         <ListItemText style={{
           color: (theme.palette as any).customColors.brightGreen,
@@ -77,14 +78,27 @@ function AgentState({ command, goals }: AgentStateProps) {
         }}>
           Args:
         </ListItemText>
+      </ListItem>
+      <ListItem>
+
 
         <List>
           {Object.keys(command?.args || {}).map((argKey: string, index: number) => (
-            <ListItem key={argKey}>
-              <ListItemText style={{}}>
-                {argKey}:{command.args[argKey]}
-              </ListItemText>
-            </ListItem>
+            <>
+              <ListItem key={argKey}>
+                <ListItemText style={{}}>
+                  {argKey}
+                </ListItemText>
+              </ListItem>
+
+              <ListItem key={argKey}>
+                <ListItemText style={{}}>
+                  {command.args[argKey]}
+                </ListItemText>
+              </ListItem>
+
+              <Divider/>
+            </>
           ))}
         </List>
       </ListItem>
@@ -101,6 +115,7 @@ function AgentState({ command, goals }: AgentStateProps) {
                 style={{
                   color: (theme.palette as any).customColors.brightYellow,
                   fontWeight: 'bold',
+                  textAlign: 'center',
                 }}
                 primary='Agent Goals' />
             </ListItem>

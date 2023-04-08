@@ -3,6 +3,7 @@ import { styled } from '@mui/system';
 import SendIcon from '@material-ui/icons/Send';
 import { InputAdornment } from '@material-ui/core';
 import { TextField } from '@mui/material';
+import { commandNeedsPermission } from '../util/commands_util';
 
 const ActionsContainer = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -51,7 +52,7 @@ const Actions: React.FC<any> = ({ onSendMessage, selectedAgentId, command, onAge
 
     let result = null;
 
-    if (command) {
+    if (command && commandNeedsPermission(command?.['name'])) {
       result = await onAgentAct(message);
     } else {
       result = await onSendMessage(message);

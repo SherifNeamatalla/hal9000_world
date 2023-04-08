@@ -15,7 +15,9 @@ SNOWFLAKE_COMMAND = "snowflake"
 CONSTRAINTS_RESOURCES_PROMPT_NAME = "constraints_resources_prompt.txt"
 RESPONSE_FORMAT_PROMPT_NAME = "response_format_prompt.txt"
 BASE_COMMANDS_SET_NAME = "base_commands_set.txt"
-INITIAL_USER_INPUT = 'Think and determine which next command to use, and respond using the format specified above:'
+INITIAL_USER_INPUT = 'Think and determine which next command to use, and respond using ONLY the format specified ' \
+                     'above, no verbose, no extra information, no extra commands, no extra thoughts, no confirmation ' \
+                     'that you understood, only reply in JSON format.'
 DEFAULT_START_PROMPT_PATH = 'default_start_prompt.txt'
 
 ####Sub agent constants####

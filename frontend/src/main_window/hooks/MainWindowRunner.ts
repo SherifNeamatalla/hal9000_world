@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { chatAgent, listAgents, loadAgent } from '../../api/AgentsApiService';
+import { actAgent, chatAgent, listAgents, loadAgent } from '../../api/AgentsApiService';
 import { Agent } from '../../agent/model/Agent';
 import { AGENT_ROLE, USER_ROLE } from '../../config/Constants';
+import { parseJSONWithTrailingCommas } from '../../util/json_util';
 
 //TODO : refactor the fuck out of this monstrosity
 export function useMainWindowRunner() {
+  const [showHal, setShowHal] = useState(false);
+
   const [agentState, setAgentState] = useState({});
 
   const [logs, setLogs] = useState<Array<string>>([]);
@@ -15,7 +18,7 @@ export function useMainWindowRunner() {
     selectedAgent, selectedAgentId, setSelectedAgentId,
     command, goals, role, config, chatHistory,
     onSendMessage, onResendMessage, onAgentAct,
-  } = useAgentSelected(agents, setLogs);
+  } = useAgentSelected(agents, setLogs, showHal, setShowHal);
 
 
   return {
@@ -33,12 +36,13 @@ export function useMainWindowRunner() {
     chatHistory,
     onSendMessage,
     onResendMessage,
-    onAgentAct
+    onAgentAct,
+    showHal,
   };
 }
 
 
-const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
+const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setShowHal: any) => {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
@@ -70,14 +74,18 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
       const role = entry['role'];
       // @ts-ignore
       let content = entry['content'];
+      console.debug({role,content})
 
       if (role === AGENT_ROLE) {
         try {
-          content = JSON.parse(entry?.content?.replace(/\n/g, ''));
+          content = parseJSONWithTrailingCommas(content);
+
+          console.debug({ content });
           entry['content'] = content;
 
         } catch (e) {
-          console.debug('Failed to parse command');
+          console.debug({ kek: content, e });
+
         }
       }
 
@@ -85,6 +93,7 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
     });
 
 
+    console.debug({ mappedHistory });
     setGoals(selectedAgent.goals);
     setRole(selectedAgent.role);
     setConfig(selectedAgent.config);
@@ -100,12 +109,15 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
     }
 
     try {
+      setShowHal(true);
       const response = await loadAgent(selectedAgentId);
       // @ts-ignore
       const data = response.data?.result as Agent;
       setSelectedAgent(data);
     } catch (error) {
       //TODO: handle error
+    } finally {
+      setShowHal(false);
     }
   }
 
@@ -151,6 +163,7 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
 
 
     try {
+      setShowHal(true);
       const response = await chatAgent(selectedAgentId, message);
 
       // @ts-ignore
@@ -161,12 +174,15 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
       const logs = response.data?.logs as Array<string>;
 
       setSelectedAgent(agent);
-      setCommand(command);
+      setCommand(parseJSONWithTrailingCommas(command));
       setLogs(logs);
+
     } catch (error) {
       // @ts-ignore
       newEntry['confirmed'] = 'error';
       setChatHistory([...chatHistory]);
+    } finally {
+      setShowHal(false);
     }
 
   }
@@ -195,13 +211,36 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
 
   }
 
-  function onAgentAct(userInput:string){
+  async function onAgentAct(userInput: string) {
+    if (!selectedAgentId) {
+      return { 'status': 'error', 'message': 'No agent found!' };
+    }
+
+    if (!command) {
+      return { 'status': 'error', 'message': 'No command found!' };
+    }
+    // @ts-ignore
+    try {
+      setShowHal(true);
+      const response = await actAgent(selectedAgentId, userInput, command);
+      // @ts-ignore
+      const data = response.data;
+      const agent = data.result as Agent;
+      // @ts-ignore
+      const logs = response.data?.logs as Array<string>;
+
+      setSelectedAgent(agent);
+      setLogs(logs);
+    } catch (error) {
+      setShowHal(false);
+    }
 
   }
+
   return {
     selectedAgent, selectedAgentId, setSelectedAgentId,
     command, goals, role, config, chatHistory, thoughts,
-    onSendMessage, onResendMessage,onAgentAct
+    onSendMessage, onResendMessage, onAgentAct,
   };
 };
 

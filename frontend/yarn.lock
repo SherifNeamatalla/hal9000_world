@@ -8905,6 +8905,11 @@ strip-json-comments@^3.1.0, strip-json-comments@^3.1.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
 
+strip-json-trailing-commas@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/strip-json-trailing-commas/-/strip-json-trailing-commas-1.1.0.tgz#df0fb8501ec251ad1aca10935b2ad35f73a8ccca"
+  integrity sha512-oFze7V4LBrJXx1liTYTXg2VRhHZAqlw/4izGIkrvz/DxJV/ocp1fVKIAexslbnHvEOjngmu396O6SDkgeIdt+w==
+
 style-loader@^3.3.1:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/style-loader/-/style-loader-3.3.2.tgz#eaebca714d9e462c19aa1e3599057bc363924899"

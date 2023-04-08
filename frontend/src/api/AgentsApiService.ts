@@ -17,7 +17,10 @@ export function chatAgent(agentId: string, message?: string) {
   return axiosInstance.post<Agent>(`/agent/chat/${agentId}`, message);
 }
 
-export function actAgent(agentId: string, command: any) {
-  return axiosInstance.post<Agent>(`/agent/act/${agentId}`, command);
-}
 
+export function actAgent(agentId: string, commandResponse: string, command: any) {
+  return axiosInstance.post(`/agent/act/${agentId}`, {
+    command_response: commandResponse,
+    command: command,
+  });
+}

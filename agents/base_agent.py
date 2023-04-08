@@ -14,7 +14,7 @@ from util.util import create_message
 
 class BaseAgent:
     def __init__(self, name, role, config, agent_id=None, goals=[], personal_goals=[], long_term_memory="",
-                 short_term_memory=""):
+                 short_term_memory=[]):
         # This holds the long term memory, agent decides what to store here
         self.id = agent_id
         self.name = name

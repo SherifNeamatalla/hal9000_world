@@ -3,12 +3,14 @@ from agents.config import AgentConfig
 from config.app_config import AppConfig
 from display.spinner import Spinner
 from runners.runner_interface import IRunner
-from util.agents_util import load_agent_by_id
+from util.agents_util import load_agent_by_id, reset_agent
 from util.commands_util import ask_user_command_permission
 
 
 class AutoGptRunner(IRunner):
     def run(self):
+        reset_agent('9')
+
         agent = self.load_agent()
 
         AppConfig().display_manager.print_hello_world(agent.name)

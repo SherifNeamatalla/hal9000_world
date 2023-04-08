@@ -9,7 +9,6 @@ import {
   ListItemAvatar,
   ListItemIcon,
   ListItemSecondaryAction,
-  ListSubheader,
   Stack,
   Tooltip,
   useTheme,
@@ -33,6 +32,7 @@ import {
   faSpinner,
   faUserTie,
 } from '@fortawesome/free-solid-svg-icons';
+import { commandNeedsPermission } from '../util/commands_util';
 
 interface Props {
   agentState: any;
@@ -41,6 +41,7 @@ interface Props {
   onResendMessage: any;
   onAgentAct: any;
   command: any;
+  showHal: boolean;
 }
 
 const ChatWindowContainer = styled('div')(({ theme }) => ({
@@ -95,28 +96,10 @@ const PlanText = styled('div')(({ theme }) => ({
   lineHeight: '20px',
 }));
 
-const ListHeaderText = styled('div')(({ theme }) => ({
-  fontFamily: 'Roboto Mono',
-  whiteSpace: 'pre-wrap',
-  fontSize: '14px',
-  lineHeight: '20px',
-}));
-
-const HeaderText = styled('div')(({ theme }) => ({
-  fontFamily: 'Roboto Mono',
-  whiteSpace: 'pre-wrap',
-  fontSize: '14px',
-  lineHeight: '20px',
-  textAlign: 'center',
-  color: theme.palette.customColors.brightPink,
-}));
-
-const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResendMessage, onAgentAct }) => {
+const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResendMessage, onAgentAct, showHal }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const [messages, setMessages] = useState<string[]>([]);
-
-  const [showHal, setShowHal] = useState<boolean>(false);
 
   const [typingSpeed, setTypingSpeed] = useState<number>(10);
 
@@ -194,6 +177,7 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
   function agentMessageComponent(content: any) {
     const thoughts = content['thoughts'];
 
+    console.debug({content, thoughts,boolo:!!thoughts?.['text']})
     if (!thoughts) {
       return null;
     }
@@ -267,6 +251,7 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
     const content = message.content;
     const confirmedStatus = message.confirmed || null;
 
+
     switch (role) {
       case USER_ROLE:
         return userMessageComponent(content, confirmedStatus);
@@ -282,9 +267,11 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
   }
 
   function commandMessageComponent() {
-    if (!command) {
+    if (!command || !commandNeedsPermission(command?.['name'])) {
       return null;
     }
+
+
     return (<ListItem>
       <ListItemAvatar>
         <Tooltip title={'Waiting for user permission!'}>
@@ -333,9 +320,6 @@ const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResen
 
     return <ChatWindowContainer className={(showHal ? 'hal_9000' : '')+' scrollable-container'}>
       <List className={'scrollable-content'}>
-        <ListSubheader>
-          <HeaderText>Chat</HeaderText>
-        </ListSubheader>
         {content}
         {commandMessageComponent()}
       </List>

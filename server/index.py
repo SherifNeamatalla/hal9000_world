@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Body, Request
+from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 from config.app_config import AppConfig
@@ -6,6 +7,12 @@ from config.env_loader import load_env
 from config.saved_app_configs import SERVER_APP_CONFIG_NAME
 from runner import do_load_agent, do_act, do_chat, do_create_agent, do_list_agents
 from util.config_util import init_app_config
+
+
+class ActResponseBody(BaseModel):
+    command_response: str
+    command: dict
+
 
 app = FastAPI()
 origins = ["*"]
@@ -59,8 +66,10 @@ async def chat(agent_id: str, message: str = Body(...)):
 
 
 @app.post("/agent/act/{agent_id}")
-async def act(agent_id: str, command: dict = Body(...)):
-    return do_act(agent_id, command)
+async def act(agent_id: str, body: ActResponseBody):
+    command_response = body.command_response
+    command = body.command
+    return do_act(agent_id, command_response, command)
 
 
 if __name__ == "__main__":

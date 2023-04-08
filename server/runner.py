@@ -27,7 +27,16 @@ def do_chat(agent_id: str, message: str):
 
     runner = ServerAgentRunner(agent, user_response=message)
 
-    return return_result(map_agent(runner.run()))
+    result = runner.run()
+
+    agent = map_agent(result['agent'])
+
+    command = result['command']
+
+    return return_result({
+        'agent': agent,
+        'command': command,
+    })
 
 
 def do_act(agent_id: str, command_response: str, command: dict):
@@ -64,7 +73,7 @@ def map_agent(agent):
         'role': agent.role,
         'config': agent.config.to_dict(),
         'goals': agent.goals,
-        'chatHistory': agent.short_term_memory.memory,
+        'chatHistory': agent.get_filtered_short_term_memory(),
     }
 
 

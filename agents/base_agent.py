@@ -33,6 +33,7 @@ class BaseAgent:
         return self.chat(self.config.get('default_user_input'))
 
     def chat(self, user_input=None):
+        original_user_input = user_input
         # Can happen after user prompt that last message is from user, use that instead of default if no user input
         # is given, but always add the default prompt as this will keep reminding the agent to stick to the format etc
         if not user_input:
@@ -60,7 +61,9 @@ class BaseAgent:
         new_response_json = response.choices[0].message["content"]
 
         # Update short term memory
-        self.short_term_memory.add(create_message(USER_ROLE, user_input))
+        # Using original to not include the system messages / inner user prompts in history
+        if original_user_input:
+            self.short_term_memory.add(create_message(USER_ROLE, original_user_input))
         self.short_term_memory.add(create_message(ASSISTANT_ROLE, new_response_json))
 
         return new_response_json
@@ -235,6 +238,16 @@ class BaseAgent:
             return
 
         AppConfig().display_manager.print_agent_goals(self.goals, self.personal_goals)
+
+    def get_filtered_short_term_memory(self):
+        memory = self.short_term_memory.memory
+        filtered_memory = []
+        # Remove all user prompts that = default user prompt
+        for entry in memory:
+            if entry['role'] != USER_ROLE or entry['content'] != self.config.get('default_user_input'):
+                filtered_memory.append(entry)
+
+        return filtered_memory
 
     @staticmethod
     def load_from_dict(data):

@@ -32,3 +32,18 @@
 .cursor {
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20"><rect x="7" y="3" width="2" height="14" rx="1" fill="white"/><rect x="7" y="3" width="2" height="14" rx="1" fill="black"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite"/></rect></svg>'), auto;
 }
+
+
+.scrollable-container {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  border: 1px solid black;
+}
+
+.scrollable-content {
+  display: flex;
+  flex-direction: column;
+}

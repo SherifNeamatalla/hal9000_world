@@ -1,10 +1,9 @@
 import React from 'react';
 import { styled } from '@mui/system';
-import { Divider, List, ListItem, ListItemText, TextField } from '@mui/material';
+import { Divider, List, ListItem, ListItemText, TextField, useTheme } from '@mui/material';
 
 interface AgentStateProps {
-  agentState: any;
-  setAgentState: any;
+  command: any;
   goals: any;
 }
 
@@ -28,35 +27,68 @@ const CommandTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-function AgentState({ agentState, setAgentState, goals }: AgentStateProps) {
-  const [isCommandNameEnabled, setIsCommandNameEnabled] = React.useState(false);
-  const [isCommandTypeEnabled, setIsCommandTypeEnabled] = React.useState(false);
+function AgentState({ command, goals }: AgentStateProps) {
 
-  const handleCommandNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAgentState({ ...agentState, commandName: event.target.value });
-  };
+  const theme = useTheme();
 
 
-  const handleCommandTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAgentState({ ...agentState, commandType: event.target.value });
-  };
+  function commandComponent() {
+    if (!command) {
+      return null;
+    }
+
+    return (<>
+      <ListItem>
+        <ListItemText style={{
+          color: (theme.palette as any).customColors.brightYellow,
+          fontWeight: 'bold',
+          textAlign: 'center',
+        }}>
+          Command
+        </ListItemText>
 
 
-  function textFieldComponent(label: any, value: any, setter: any, enabled: any, setEnabled: any) {
-    return (<CommandTextField
-      label={label}
-      fullWidth
-      disabled={!enabled}
-      value={value}
-      onChange={handleCommandNameChange}
-      variant={'standard'}
-      // InputProps={{
-      //   endAdornment: <InputAdornment
-      //     style={{ cursor: 'pointer' }}
-      //     onClick={() => setEnabled(!enabled)}
-      //     position='end'><Edit /></InputAdornment>,
-      // }}
-    />);
+      </ListItem>
+      <ListItem>
+
+      </ListItem>
+      <ListItem>
+        <ListItemText style={{
+          color: (theme.palette as any).customColors.brightGreen,
+          fontWeight: 'bold',
+        }}>
+          Name: {command?.name}
+        </ListItemText>
+      </ListItem>
+
+      <ListItem>
+        <ListItemText style={{
+          color: (theme.palette as any).customColors.brightGreen,
+          fontWeight: 'bold',
+        }}>
+          Type: {command?.type}
+        </ListItemText>
+      </ListItem>
+
+      <ListItem>
+        <ListItemText style={{
+          color: (theme.palette as any).customColors.brightGreen,
+          fontWeight: 'bold',
+        }}>
+          Args:
+        </ListItemText>
+
+        <List>
+          {Object.keys(command?.args || {}).map((argKey: string, index: number) => (
+            <ListItem key={argKey}>
+              <ListItemText style={{}}>
+                {argKey}:{command.args[argKey]}
+              </ListItemText>
+            </ListItem>
+          ))}
+        </List>
+      </ListItem>
+    </>);
   }
 
   return (
@@ -65,22 +97,22 @@ function AgentState({ agentState, setAgentState, goals }: AgentStateProps) {
         {(goals || []) && (
           <>
             <ListItem>
-              <ListItemText primary='Agent Goals' />
+              <ListItemText
+                style={{
+                  color: (theme.palette as any).customColors.brightYellow,
+                  fontWeight: 'bold',
+                }}
+                primary='Agent Goals' />
             </ListItem>
             {(goals || []).map((goal: string, index: number) => (
               <ListItem key={index}>
-                <ListItemText primary={(index+1)+'. '+goal} />
+                <ListItemText primary={(index + 1) + '. ' + goal} />
               </ListItem>
             ))}
             <Divider />
           </>
         )}
-        <ListItem>
-          {textFieldComponent('Command', agentState.commandName, handleCommandNameChange, isCommandNameEnabled, setIsCommandNameEnabled)}
-        </ListItem>
-        <ListItem>
-          {textFieldComponent('Type', agentState.commandType, handleCommandTypeChange, isCommandTypeEnabled, setIsCommandTypeEnabled)}
-        </ListItem>
+        {commandComponent()}
       </List>
     </AgentStateContainer>
   );

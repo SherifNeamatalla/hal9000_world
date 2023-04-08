@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { styled } from '@mui/system';
 import SendIcon from '@material-ui/icons/Send';
 import { InputAdornment } from '@material-ui/core';
@@ -36,29 +36,55 @@ const TextArea = styled(TextField)(({ theme }) => ({
   },
 }));
 
-interface Props {
-  onActionClick: (action: string) => void;
-}
 
-const Actions: React.FC<Props> = ({ onActionClick }) => {
+const Actions: React.FC<any> = ({ onSendMessage, selectedAgentId, command, onAgentAct }) => {
 
-  const handleActionClick = (action: string) => {
-    onActionClick(action);
+  const [message, setMessage] = React.useState<string>('');
+
+  useEffect(() => {
+    setMessage('');
+  }, [selectedAgentId]);
+
+
+  const handleActionClick = async () => {
+    setMessage('');
+
+    let result = null;
+
+    if (command) {
+      result = await onAgentAct(message);
+    } else {
+      result = await onSendMessage(message);
+    }
+
+    console.debug({ result });
   };
 
+  const handleKeyPress = (event: any) => {
+    if (event.key === 'Enter') {
+      handleActionClick();
+    }
+  };
   return (
     <ActionsContainer>
       <TextAreaContainer>
         <TextArea
           InputProps={{
-            endAdornment: <InputAdornment
-              style={{ cursor: 'pointer' }}
-              onClick={() => handleActionClick('send')}
-              position='end'><SendIcon
-              style={{ transform: 'rotate(-45deg)' }}
-            /></InputAdornment>,
+            endAdornment: (
+              <InputAdornment
+                style={{ cursor: 'pointer' }}
+                onClick={() => handleActionClick()}
+                position='end'
+              >
+                <SendIcon style={{ transform: 'rotate(-45deg)' }} />
+              </InputAdornment>
+            ),
           }}
-          placeholder='Type your message...' />
+          placeholder={command ? 'Type your feedback...' : 'Type your message...'}
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          onKeyPress={handleKeyPress}
+        />
       </TextAreaContainer>
     </ActionsContainer>
   );

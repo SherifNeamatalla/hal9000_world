@@ -18,7 +18,10 @@ class ServerAgentRunner(IRunner):
         if self.user_response and self.command:
             return self.run_command_response()
 
-        return self.run_chat_process()
+        return {
+            'command': self.run_chat_process(),
+            'agent': self.agent,
+        }
 
     def run_command_response(self):
         self.agent.act(self.command, self.user_response)
@@ -31,7 +34,5 @@ class ServerAgentRunner(IRunner):
         # For the developer looking at the cmd line of the server
         with Spinner("Thinking... "):
             self.agent.chat(self.user_response)
-
-        self.agent.think()
 
         return self.agent.think()

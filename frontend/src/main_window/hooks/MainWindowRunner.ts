@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { listAgents, loadAgent } from '../../api/AgentsApiService';
+import { chatAgent, listAgents, loadAgent } from '../../api/AgentsApiService';
 import { Agent } from '../../agent/model/Agent';
-import { AGENT_ROLE } from '../../config/Constants';
+import { AGENT_ROLE, USER_ROLE } from '../../config/Constants';
 
+//TODO : refactor the fuck out of this monstrosity
 export function useMainWindowRunner() {
   const [agentState, setAgentState] = useState({});
 
@@ -13,7 +14,8 @@ export function useMainWindowRunner() {
   const {
     selectedAgent, selectedAgentId, setSelectedAgentId,
     command, goals, role, config, chatHistory,
-  } = useAgentSelected(agents);
+    onSendMessage, onResendMessage, onAgentAct,
+  } = useAgentSelected(agents, setLogs);
 
 
   return {
@@ -29,11 +31,14 @@ export function useMainWindowRunner() {
     role,
     config,
     chatHistory,
+    onSendMessage,
+    onResendMessage,
+    onAgentAct
   };
 }
 
 
-const useAgentSelected = (agents: Array<Agent>) => {
+const useAgentSelected = (agents: Array<Agent>, setLogs: any) => {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
@@ -42,7 +47,7 @@ const useAgentSelected = (agents: Array<Agent>) => {
   const [command, setCommand] = useState<string | undefined>(undefined);
   const [role, setRole] = useState<string | undefined>(undefined);
   const [config, setConfig] = useState<string | undefined>(undefined);
-  const [chatHistory, setChatHistory] = useState<string | undefined>(undefined);
+  const [chatHistory, setChatHistory] = useState<Array<any>>([]);
   const [thoughts, setThoughts] = useState<string | undefined>(undefined);
   useEffect(() => {
     if (!selectedAgentId || !agents.length) {
@@ -59,12 +64,6 @@ const useAgentSelected = (agents: Array<Agent>) => {
       return;
     }
 
-
-    // @ts-ignore
-    // const newChatHistory = JSON.parse(selectedAgent.chatHistory);
-
-
-    console.debug({ newChatHistory: selectedAgent.chatHistory, selectedAgent });
 
     const mappedHistory = (selectedAgent.chatHistory || []).map((entry: any) => {
       // @ts-ignore
@@ -86,12 +85,11 @@ const useAgentSelected = (agents: Array<Agent>) => {
     });
 
 
-    console.debug({mappedHistory});
     setGoals(selectedAgent.goals);
     setRole(selectedAgent.role);
     setConfig(selectedAgent.config);
     setChatHistory(mappedHistory);
-    // setCommandFromHistory(newChatHistory);
+    setCommandFromHistory(mappedHistory);
 
   }, [selectedAgent]);
 
@@ -123,7 +121,7 @@ const useAgentSelected = (agents: Array<Agent>) => {
       setCommand(undefined);
     }
     // @ts-ignore
-    const content = lastMessage?.['content']?.replaceAll(/\n/g, '');
+    const content = lastMessage?.['content'];
 
     setCommand(content?.['command']);
     setThoughts(content?.['thoughts']);
@@ -131,9 +129,79 @@ const useAgentSelected = (agents: Array<Agent>) => {
 
   }
 
+  async function onSendMessage(message?: string, isResend = false) {
+    if (!message || !selectedAgentId) {
+      return { 'status': 'error', 'message': 'No message or agent found!' };
+    }
+
+
+    let newEntry = {
+      'role': USER_ROLE,
+      'content': message,
+      'confirmed': 'pending',
+    };
+    // Add message to chat history only if it is not a resend, otherwise it was already added
+    if (!isResend) {
+      chatHistory.push(newEntry);
+
+      setChatHistory([...chatHistory]);
+
+      newEntry = chatHistory[chatHistory.length - 1];
+    }
+
+
+    try {
+      const response = await chatAgent(selectedAgentId, message);
+
+      // @ts-ignore
+      const data = response.data?.result;
+      const agent = data.agent as Agent;
+      const command = data.command as string;
+      // @ts-ignore
+      const logs = response.data?.logs as Array<string>;
+
+      setSelectedAgent(agent);
+      setCommand(command);
+      setLogs(logs);
+    } catch (error) {
+      // @ts-ignore
+      newEntry['confirmed'] = 'error';
+      setChatHistory([...chatHistory]);
+    }
+
+  }
+
+  async function onResendMessage() {
+    if (!selectedAgentId || !chatHistory.length) {
+      return { 'status': 'error', 'message': 'No agent found!' };
+    }
+    // find this  const newEntry = {
+    //   'role': USER_ROLE,
+    //   'content': message,
+    //   'confirmed': 'pending',
+    // }
+
+    // and resend it
+
+    const lastMessage = chatHistory[chatHistory.length - 1];
+
+    console.debug({ lastMessage });
+    if (lastMessage['role'] !== USER_ROLE || lastMessage['confirmed'] !== 'error') {
+      return;
+    }
+
+    // @ts-ignore
+    onSendMessage(lastMessage['content'], true);
+
+  }
+
+  function onAgentAct(userInput:string){
+
+  }
   return {
     selectedAgent, selectedAgentId, setSelectedAgentId,
     command, goals, role, config, chatHistory, thoughts,
+    onSendMessage, onResendMessage,onAgentAct
   };
 };
 

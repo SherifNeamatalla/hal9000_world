@@ -40,9 +40,7 @@ const useStyles = makeStyles((theme) => {
 const MainLayout = (props: any) => {
   const classes = useStyles();
 
-  function onActionClick(action: string): void {
-    console.debug('onActionClick', action);
-  }
+
 
   return (
     <Stack direction={'row'} className={classes.root}>
@@ -56,7 +54,7 @@ const MainLayout = (props: any) => {
           <ChatWindow {...props} />
         </Grid>
         <Grid item  className={classes.actions}>
-          <Actions onActionClick={onActionClick} {...props} />
+          <Actions onSendMessage={props.onSendMessage} {...props} />
         </Grid>
       </Grid>
       {/* Main Content */}

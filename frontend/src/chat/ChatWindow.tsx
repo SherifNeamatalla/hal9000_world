@@ -1,20 +1,36 @@
 // ChatWindow.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@mui/system';
-import { Divider, List, ListItem, ListItemAvatar, ListItemIcon, ListSubheader, Stack } from '@mui/material';
+import {
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListSubheader,
+  Stack,
+  Tooltip,
+  useTheme,
+} from '@mui/material';
 import { Avatar, ListItemText } from '@material-ui/core';
 import './ChatWindow.css';
 // @ts-ignore
 import ReactTypingEffect from 'react-typing-effect';
-import { AGENT_ROLE, SYSTEM_ROLE, USER_ROLE } from '../config/Constants';
+import { AGENT_ROLE, PERMISSION_DENIED, PERMISSION_GRANTED, SYSTEM_ROLE, USER_ROLE } from '../config/Constants';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBan,
   faBrain,
   faCalendarAlt,
+  faCheckCircle,
+  faCircleXmark,
   faCog,
+  faExclamationTriangle,
   faLightbulb,
   faMicrophone,
+  faSpinner,
   faUserTie,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -22,6 +38,9 @@ interface Props {
   agentState: any;
   sendMessage: any;
   chatHistory: any;
+  onResendMessage: any;
+  onAgentAct: any;
+  command: any;
 }
 
 const ChatWindowContainer = styled('div')(({ theme }) => ({
@@ -92,9 +111,9 @@ const HeaderText = styled('div')(({ theme }) => ({
   color: theme.palette.customColors.brightPink,
 }));
 
-const ChatWindow: React.FC<Props> = ({ agentState, sendMessage, chatHistory }) => {
+const ChatWindow: React.FC<Props> = ({ agentState, command, chatHistory, onResendMessage, onAgentAct }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const theme = useTheme();
   const [messages, setMessages] = useState<string[]>([]);
 
   const [showHal, setShowHal] = useState<boolean>(false);
@@ -204,15 +223,38 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage, chatHistory }) =
 
   }
 
-  function userMessageComponent(content: any) {
+
+  const renderIcon = (confirmedStatus: any) => {
+    if (confirmedStatus === 'error') {
+      return (<Tooltip title='Woops! Message did not go through!'>
+        <FontAwesomeIcon
+          icon={faExclamationTriangle}
+          onClick={() => onResendMessage()}
+          style={{ cursor: 'pointer' }}
+        />
+      </Tooltip>);
+    } else if (confirmedStatus === 'pending') {
+      return <FontAwesomeIcon icon={faSpinner} spin />;
+    }
+    return null;
+  };
+
+  function userMessageComponent(content: any, confirmedStatus: any) {
+
     return (<ListItem>
       <ListItemAvatar>
         <FontAwesomeIcon icon={faUserTie} />
       </ListItemAvatar>
 
       <ListItemText>
-        {(content || '').replace('Human feedback:','')}
+        {(content || '').replace('Human feedback:', '')}
       </ListItemText>
+
+      {renderIcon(confirmedStatus) && (
+        <ListItemSecondaryAction>
+          {renderIcon(confirmedStatus)}
+        </ListItemSecondaryAction>
+      )}
     </ListItem>);
   }
 
@@ -223,10 +265,11 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage, chatHistory }) =
 
     const role = message.role;
     const content = message.content;
+    const confirmedStatus = message.confirmed || null;
 
     switch (role) {
       case USER_ROLE:
-        return userMessageComponent(content);
+        return userMessageComponent(content, confirmedStatus);
 
       case AGENT_ROLE:
         return agentMessageComponent(content);
@@ -236,6 +279,43 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage, chatHistory }) =
       default:
         return 'This message has no role, this is a bug !!!';
     }
+  }
+
+  function commandMessageComponent() {
+    if (!command) {
+      return null;
+    }
+    return (<ListItem>
+      <ListItemAvatar>
+        <Tooltip title={'Waiting for user permission!'}>
+          <FontAwesomeIcon icon={faExclamationTriangle} />
+        </Tooltip>
+      </ListItemAvatar>
+
+      <ListItemText>
+        Your response to the command (Send a message instead to provide feedback)
+      </ListItemText>
+
+      <ListItemSecondaryAction>
+        <IconButton>
+          <FontAwesomeIcon icon={faCheckCircle}
+                           style={{ color: (theme.palette as any).matrix.contrastText }}
+                           onClick={() => {
+                             onAgentAct(PERMISSION_GRANTED);
+                           }}
+          />
+        </IconButton>
+
+        <IconButton>
+          <FontAwesomeIcon icon={faCircleXmark}
+                           onClick={() => {
+                             onAgentAct(PERMISSION_DENIED);
+                           }}
+                           style={{ color: (theme.palette as any).customColors.brightOrange2 }}
+          />
+        </IconButton>
+      </ListItemSecondaryAction>
+    </ListItem>);
   }
 
   function body() {
@@ -251,12 +331,13 @@ const ChatWindow: React.FC<Props> = ({ agentState, sendMessage, chatHistory }) =
     </>);
 
 
-    return <ChatWindowContainer className={showHal ? 'hal_9000' : ''}>
-      <List>
+    return <ChatWindowContainer className={(showHal ? 'hal_9000' : '')+' scrollable-container'}>
+      <List className={'scrollable-content'}>
         <ListSubheader>
           <HeaderText>Chat</HeaderText>
         </ListSubheader>
         {content}
+        {commandMessageComponent()}
       </List>
     </ChatWindowContainer>;
 

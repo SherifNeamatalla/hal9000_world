@@ -24,6 +24,10 @@ def create_short_term_memory_context(model, max_tokens, context, user_input, ful
         # print (f"CURRENT TOKENS USED: {current_tokens_used}")
         message_to_add = full_message_history[next_message_to_add_index]
 
+        if not message_to_add or not message_to_add['content']:
+            next_message_to_add_index -= 1
+            continue
+
         tokens_to_add = count_message_tokens([message_to_add], model)
         if current_tokens_used + tokens_to_add > send_token_limit:
             break

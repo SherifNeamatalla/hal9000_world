@@ -2,9 +2,51 @@ from typing import List, Dict
 
 import tiktoken
 from config.constants import USER_ROLE
-from util.util import create_message
+from util.util import create_message, create_langchain_message
 
 
+def create_langchain_short_term_memory_context(model, max_tokens, context, user_input, full_message_history):
+    # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the
+    # right length of the short term memory, shouldn't exceed self.config.get('max_tokens')
+
+    token_limit = max_tokens - count_message_tokens(context, model)
+    send_token_limit = token_limit - 1000
+    next_message_to_add_index = len(full_message_history) - 1
+    current_tokens_used = 0
+    insertion_index = len(context)
+
+    # Count the currently used tokens
+    current_tokens_used = count_message_tokens(context, model)
+    current_tokens_used += count_message_tokens([create_langchain_message(USER_ROLE, user_input)],
+                                                model)  # Account for user input (appended later)
+
+    while next_message_to_add_index >= 0:
+        # print (f"CURRENT TOKENS USED: {current_tokens_used}")
+        message_to_add = full_message_history[next_message_to_add_index]
+
+        if not message_to_add or not message_to_add['content']:
+            next_message_to_add_index -= 1
+            continue
+
+        tokens_to_add = count_message_tokens([message_to_add], model)
+        if current_tokens_used + tokens_to_add > send_token_limit:
+            break
+
+        # Add the most recent message to the start of the current context, after the two system prompts.
+        context.insert(insertion_index, full_message_history[next_message_to_add_index])
+
+        # Count the currently used tokens
+        current_tokens_used += tokens_to_add
+
+        # Move to the next most recent message in the full message history
+        next_message_to_add_index -= 1
+
+    # Append user input, the length of this is accounted for above
+    context.extend([create_langchain_message(USER_ROLE, user_input)])
+
+    tokens_remaining = token_limit - current_tokens_used
+
+    return context, tokens_remaining
 def create_short_term_memory_context(model, max_tokens, context, user_input, full_message_history):
     # Add the short term memory of the agent, we will use token_counter ( Thank you Auto-GPT ! ) to add just the
     # right length of the short term memory, shouldn't exceed self.config.get('max_tokens')

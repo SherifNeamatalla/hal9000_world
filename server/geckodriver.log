@@ -29,3 +29,6 @@ WebDriver BiDi listening on ws://127.0.0.1:55377
 [GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
 console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /var/folders/nj/y8blck3968lb9wwr1bw_krvc0000gn/T/rust_mozprofileY2HH8l/search.json.mozlz4", (void 0)))
 DevTools listening on ws://127.0.0.1:55377/devtools/browser/ead8bc72-e36a-484f-9ee2-1ff1feb0aafa
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.

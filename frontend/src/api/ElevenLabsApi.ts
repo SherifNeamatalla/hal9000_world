@@ -16,15 +16,17 @@ export async function synthesizeSpeech(text: string, voice: string): Promise<str
 
   try {
     const response: AxiosResponse<VoiceApiResponse> = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voice}/stream`,
       requestBody,
       {
         headers: {
           'xi-api-key': `${API_KEY}`,
           'Content-Type': 'application/json',
         },
+        responseType: 'blob',
       },
     );
+    console.debug({kek: response.data})
 
     // @ts-ignore
     return URL.createObjectURL(response.data);

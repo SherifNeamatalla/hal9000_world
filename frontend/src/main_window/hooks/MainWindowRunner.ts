@@ -81,9 +81,16 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
 
   useEffect(() => {
     if (!selectedAgent) {
+      setAudioUrl(undefined);
+      setCommand(undefined);
+      setGoals([]);
+      setRole(undefined);
+      setConfig(undefined);
+      setChatHistory([]);
       return;
     }
 
+    setAudioUrl(undefined);
 
     const mappedHistory = (selectedAgent.chatHistory || []).map((entry: any) => {
       // @ts-ignore
@@ -126,7 +133,6 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
 
     try {
       const synthesizedAudioUrl = await synthesizeSpeech(text, elevenLabsVoices["young_f_british"]);
-      console.debug({synthesizedAudioUrl});
       setAudioUrl(synthesizedAudioUrl);
     } catch (error) {
       console.error('Error synthesizing speech:', error);

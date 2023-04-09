@@ -1,0 +1,12 @@
+COMMANDS:
+1.Navigate to URL: name: "selenium" - args: "url": "<url>" - type: "navigate_to_url" - Navigate to the given URL using the headless browser.
+2.Find Element: name: "selenium" - args: "by": "<by>", "value": "<value>", "timeout": "<timeout>" - type: "find_element" - Find an element on the current page using the given method (By) and value. Optionally, provide a timeout in seconds.
+3.Click Element: name: "selenium" - args: "element": "<element>" - type: "click_element" - Click the given web element.
+4.Fill Form: name: "selenium" - args: "element": "<element>", "text": "<text>" - type: "fill_form" - Fill in the given form element with the specified text.
+5.Extract Text: name: "selenium" - args: "element": "<element>" - type: "extract_text" - Extract the text content from the given web element.
+6.Select Option: name: "selenium" - args: "element": "<element>", "option_value": "<option_value>" - type: "select_option" - Select an option in a drop-down menu (e.g., <select> element) by its value.
+7.Switch to Frame: name: "selenium" - args: "element": "<element>" - type: "switch_to_frame" - Switch to an iframe or frame element to interact with its content.
+8.Switch to Default Content: name: "selenium" - args: "" - type: "switch_to_default_content" - Switch back to the main content after interacting with an iframe or frame.
+9.Find Elements: name: "browser" - args: "by": "<by>", "value": "<value>", "timeout": "<timeout>" - type: "find_elements" - Find all elements on the current page using the given method (By) and value. Optionally, provide a timeout in seconds.
+10.Get URL Content: name: "selenium" - args: "url": "<url>" - type: "get_url_content" - Navigate to the given URL and return the page content as HTML.
+11.Fill Search Input: name: "selenium" - args: "search_input_selector": "<search_input_selector>", "search_term": "<search_term>" - type: "fill_search_input" - Fill the search input on the current page with the given search term and submit the search.

@@ -25,7 +25,7 @@ class FileLongTermMemory(ILongTermMemory):
 
     def get(self, key):
         if not self.memory or key not in self.memory:
-            return None
+            return 'Key not in memory'
         self.cache(key, self.memory[key])
         return self.memory[key]
 

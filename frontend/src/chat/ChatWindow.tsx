@@ -33,6 +33,7 @@ import {
   faUserTie,
 } from '@fortawesome/free-solid-svg-icons';
 import { commandNeedsPermission } from '../util/commands_util';
+import AudioPlayer from '../components/AudioPlayer';
 
 interface Props {
   agentState: any;
@@ -365,10 +366,7 @@ const ChatWindow: React.FC<Props> = ({
       </List>
       {showHal && <Hal />}
       {audioUrl && (
-        <audio controls>
-          <source src={audioUrl} type='audio/mpeg' />
-          Your browser does not support the audio element.
-        </audio>
+        <AudioPlayer audioStreamUrl={audioUrl} />
       )}
     </ChatWindowContainer>;
 

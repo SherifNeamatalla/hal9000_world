@@ -63,3 +63,5 @@ gTTS~=2.3.1
 PyObjC
 pydantic~=1.10.7
 selenium~=4.8.3
+pinecone-client
+numpy

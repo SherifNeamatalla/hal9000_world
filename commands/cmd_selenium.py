@@ -33,7 +33,7 @@ class CmdSelenium(ICmd):
 
         cmd = cmd_map.get(cmd_type)
         if cmd is None:
-            raise ValueError(f"Unsupported cmd_type: {cmd_type}")
+            return "Unsupported cmd_type: {cmd_type}"
 
         result = cmd(**cmd_args)
 
@@ -44,6 +44,7 @@ class CmdSelenium(ICmd):
         search_input.clear()
         search_input.send_keys(search_term)
         search_input.send_keys(Keys.RETURN)
+        return "Filled search input !"
 
     def _create_headless_browser(self):
         firefox_options = Options()

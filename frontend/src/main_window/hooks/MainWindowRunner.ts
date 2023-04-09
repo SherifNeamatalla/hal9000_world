@@ -172,7 +172,6 @@ const useAgentSelected = (agents: Array<Agent>, setLogs: any, showHal: any, setS
     // @ts-ignore
     const content = lastMessage?.['content'];
 
-    console.debug({content});
     setCommand(content?.['command']);
     setThoughts(content?.['thoughts']);
 

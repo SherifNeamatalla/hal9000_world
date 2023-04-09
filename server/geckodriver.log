@@ -1,0 +1,31 @@
+1681021326606	geckodriver	INFO	Listening on 127.0.0.1:55134
+1681021327110	mozrunner::runner	INFO	Running command: "/Applications/Firefox.app/Contents/MacOS/firefox-bin" "--marionette" "-headless" "--remote-debugging-port" "55135" "--remote-allow-hosts" "localhost" "-foreground" "-no-remote" "-profile" "/var/folders/nj/y8blck3968lb9wwr1bw_krvc0000gn/T/rust_mozprofilexqQAnT"
+*** You are running in headless mode.
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1681021327458	Marionette	INFO	Marionette enabled
+1681021327507	Marionette	INFO	Listening on port 55142
+Read port: 55142
+console.error: "Warning: unrecognized command line flag -remote-allow-hosts\n"
+WebDriver BiDi listening on ws://127.0.0.1:55135
+1681021327884	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /var/folders/nj/y8blck3968lb9wwr1bw_krvc0000gn/T/rust_mozprofilexqQAnT/search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:55135/devtools/browser/91303939-851d-4d6f-882b-af5960b4a523
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+1681021491742	geckodriver	INFO	Listening on 127.0.0.1:55376
+1681021492261	mozrunner::runner	INFO	Running command: "/Applications/Firefox.app/Contents/MacOS/firefox-bin" "--marionette" "-headless" "--remote-debugging-port" "55377" "--remote-allow-hosts" "localhost" "-foreground" "-no-remote" "-profile" "/var/folders/nj/y8blck3968lb9wwr1bw_krvc0000gn/T/rust_mozprofileY2HH8l"
+*** You are running in headless mode.
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1681021492504	Marionette	INFO	Marionette enabled
+1681021492544	Marionette	INFO	Listening on port 55384
+console.error: "Warning: unrecognized command line flag -remote-allow-hosts\n"
+Read port: 55384
+WebDriver BiDi listening on ws://127.0.0.1:55377
+1681021492690	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /var/folders/nj/y8blck3968lb9wwr1bw_krvc0000gn/T/rust_mozprofileY2HH8l/search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:55377/devtools/browser/ead8bc72-e36a-484f-9ee2-1ff1feb0aafa

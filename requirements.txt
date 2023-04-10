@@ -66,3 +66,5 @@ selenium~=4.8.3
 pinecone-client
 numpy
 langchain
+wikipedia
+chromadb

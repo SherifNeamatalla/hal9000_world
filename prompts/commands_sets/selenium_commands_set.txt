@@ -1,3 +1,4 @@
+
 COMMANDS:
 1.Navigate to URL: name: "selenium" - args: "url": "<url>" - type: "navigate_to_url" - Navigate to the given URL using the headless browser.
 2.Find Element: name: "selenium" - args: "by": "<by>", "value": "<value>", "timeout": "<timeout>" - type: "find_element" - Find an element on the current page using the given method (By) and value. Optionally, provide a timeout in seconds.

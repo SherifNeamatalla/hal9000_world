@@ -1,11 +1,10 @@
 import json5 as json
 from langchain.agents import initialize_agent, AgentType
 from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
 
 from agents.base_agent import BaseAgent
 from agents.memory.file_long_term_memory import FileLongTermMemory
-from agents.memory.short_term_memory import BaseMemory
+from agents.memory.langchain_memory import LangchainMemory
 from commands.commands_executor import execute_cmd
 from commands.langchain_tools.llm_tool_sets_util import get_default_langchain_toolset
 from config.app_config import AppConfig
@@ -16,35 +15,33 @@ from util.util import create_message, create_langchain_message
 
 
 class LangchainAgent(BaseAgent):
-    def __init__(self, name, role, config, agent_id=None, goals=[], personal_goals=[], long_term_memory="",
+    def __init__(self, name, role, config, agent_id=None, goals=[], long_term_memory="",
                  short_term_memory=[]):
         # This holds the long term memory, agent decides what to store here
         self.id = agent_id
         self.name = name
         self.role = role
         self.goals = goals
-        self.personal_goals = personal_goals
+        # TODO
         self.long_term_memory = FileLongTermMemory(self.name, long_term_memory)
         # This holds the current conversation
-        self.short_term_memory = BaseMemory(self.name, short_term_memory)
+        self.short_term_memory = LangchainMemory(self.name, short_term_memory)
         self.config = config
-        self.llm = ChatOpenAI(temperature=self.config.get('temperature'),
-                              model_name=self.config.get('model')
-                              )
 
         # TODO load by config
         self.langchain_tools = get_default_langchain_toolset()
         self.add_prebuilt_langchain_tools()
-        memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+        self.llm = ChatOpenAI(temperature=self.config.get('temperature'),
+                              model_name=self.config.get('model')
+                              )
 
         self.agent = initialize_agent(
             tools=self.langchain_tools,
             llm=self.llm,
             agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-            memory=memory,
+            memory=self.short_term_memory.memory,
             verbose=True
             # agent_path=AGENTS_DIR + self.name
-
         )
 
         self.agent
@@ -71,9 +68,11 @@ class LangchainAgent(BaseAgent):
         elif not user_input == self.config.get('default_user_input'):
             user_input = user_input + ", " + self.config.get('default_user_input')
 
+        self.short_term_memory.add_user_message(user_input)
+
         context, remaining_tokens = self.create_context(user_input)
 
-        return self.agent.run(input=user_input)
+        return self.agent.run(input=user_input, chat_history=self.short_term_memory.get_messages())
 
         # response = openai.ChatCompletion.create(
         #     model=self.config.get('model'),
@@ -224,8 +223,6 @@ class LangchainAgent(BaseAgent):
         # Add the Who you are, your goals, constraints, resources and response format
         # Add the permanent memory of the agent
         user_goals = 'User Goals: ' + '\n' + '\n'.join(self.goals)
-        personal_goals = 'Personal Goals: ' + '\n' + '\n'.join(self.personal_goals) if self.personal_goals and len(
-            self.personal_goals) > 0 else ''
 
         message = self.hello_world(self.config.get('commands_set_path'), user_goals_str=user_goals,
                                    personal_goals_str="")

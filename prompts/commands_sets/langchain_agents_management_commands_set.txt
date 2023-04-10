@@ -1,0 +1,18 @@
+COMMANDS:
+1.Google Search: name: "google", args: "input": "<search>" type: "search" - Perform a Google search for the given input.
+2.Memory Field Set: name: "memory", args: "key": "<key>", "value": "<string>" type: "set" - Set a value for a given key in the agent's memory.
+3.Memory Delete: name: "memory", args: "key": "<key>" type: "delete" - Delete the value associated with the given key from the agent's memory.
+4.Memory Get: name: "memory", args: "key": "<key>" type: "get" - Retrieve the value associated with the given key from the agent's memory.
+5.Browse Website: name: "browser", args: "url": "<url>", "question": "<what_you_want_to_find_on_website>" type: "search" - Browse the given website and search for the given question.
+7.Message existing GPT Agent: name: "agents", args: "name": "<name>", "message": "<message>" type: "message" - Send a message to an existing GPT agent with the given name and input, and receive a response.
+8.List existing GPT Agents: name: "agents", args: "" type: "list" - List all existing GPT agents and their details.
+9.Delete existing GPT Agent: name: "agents", args: "name": "<name>" type: "delete" - Delete an existing GPT agent with the given name.
+10.Download File from URL: name: "file", args: "url": "<url>", "filename": "<filename>" type: "download" - Download a file from the given URL and save it with the given filename.
+11.Write to file: name: "file", args: "file": "<file>", "text": "<text>" type: "write" - Write the given text to the given file.
+12.Read file: name: "file", args: "file": "<file>" type: "read" - Read the contents of the given file.
+13.Append to file: name: "file", args: "file": "<file>", "text": "<text>" type: "append" - Append the given text to the given file.
+14.Delete file: name: "file", args: "file": "<file>" type: "delete" - Delete the given file.
+15.Youtube Video Data: name: "youtube", args: "url": "<url>" type: "get_video_data" - Get the data for the given Youtube video.
+16.Youtube Video Script: name: "youtube", args: "url": "<url>" type: "get_video_script" - Get the captions for the given Youtube video.
+
+

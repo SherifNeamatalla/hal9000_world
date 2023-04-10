@@ -7,3 +7,5 @@ venv
 /frontend/node_modules
 /frontend/.idea
 /frontend/.env
+/storage/database/*
+/storage/files/*

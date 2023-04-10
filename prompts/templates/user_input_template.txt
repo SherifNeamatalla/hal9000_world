@@ -1,0 +1,2 @@
+{user_input}
+Before replying, Think and determine which next command to use, and respond using ONLY the format specified above.
